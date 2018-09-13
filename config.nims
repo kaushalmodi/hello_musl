@@ -42,7 +42,7 @@ task musl, "Builds an optimized static binary using musl":
     exec "strip -s " & binFile
   if findExe("upx") != "":
     # https://github.com/upx/upx/releases/
-    echo "Running 'upx' .."
-    exec "upx " & binFile
+    echo "Running 'upx --best' .."
+    exec "upx --best " & binFile
 
   echo "\nCreated binary: " & binFile
