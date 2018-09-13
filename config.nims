@@ -25,8 +25,7 @@ task musl, "Builds an optimized static binary using musl":
       "\n  Usage Example: nim musl FILE.nim.")
 
   let
-    # The nim file name must be the last.
-    nimFile = paramStr(numParams)
+    nimFile = paramStr(numParams) ## The nim file name *must* be the last.
     nimFileLen = len(nimFile)
   # echo "[debug] nimFile = " & nimFile
 
@@ -41,7 +40,7 @@ task musl, "Builds an optimized static binary using musl":
 
   # Run nim command
   let
-    nimArgs = "-d:musl -d:release c " & nimFile
+    nimArgs = "c -d:musl -d:release " & nimFile
   echo "\nRunning 'nim " & nimArgs & "' .."
   selfExec nimArgs
 
