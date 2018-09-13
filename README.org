@@ -1,8 +1,7 @@
 #+title: Nim + musl
 #+author: Kaushal Modi
-#+macro: travis [[https://travis-ci.org/kaushalmodi/hello_musl][https://travis-ci.org/kaushalmodi/hello_musl.svg?branch=master]]
 
-{{{travis}}}
+[[https://travis-ci.org/kaushalmodi/hello_musl][https://travis-ci.org/kaushalmodi/hello_musl.svg?branch=master]]
 
 This repo contains a generic [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] that adds a Nim
 "sub-command" or task named *musl*. You can simply add that file to
