@@ -1,6 +1,6 @@
-import macros  # for error
-import ospaths # for `/`
-import strutils
+from macros import error
+from ospaths import `/`
+from strutils import toLowerAscii
 
 # -d:musl
 when defined(musl):
@@ -21,7 +21,9 @@ task musl, "Builds an optimized static binary using musl":
   let
     numParams = paramCount()
   if numParams != 2:
-    error("The 'musl' sub-command needs exactly one argument (Nim file). Example: nim musl FILE.nim.")
+    error("The 'musl' sub-command needs exactly 1 argument, the Nim file (but " &
+      $(numParams-1) & " were detected)." &
+      "\n  Usage Example: nim musl FILE.nim.")
 
   let
     # The nim file name must be the last.
