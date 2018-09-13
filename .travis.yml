@@ -4,6 +4,7 @@ sudo: required
 cache:
   directories:
     - nim
+    - upx
 
 addons:
   apt:
@@ -16,7 +17,6 @@ install:
   # Build nim from its devel branch.
   # Check version of remote branch.
   - export NIMVER="$(git ls-remote https://github.com/nim-lang/Nim devel | cut -f 1)"
-
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f nim/$NIMVER/bin/nim ] && [ -f nim/$NIMVER/bin/nimble ]; } ||
       { rm -rf nim;
@@ -36,9 +36,15 @@ install:
   - nim -v
 
   - echo "Installing upx .."
-  - curl -OL https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
-  - tar xvf upx-3.95-amd64_linux.tar.xz
-  - export PATH=./upx-3.95-amd64_linux:$PATH
+  - export UPXVER="3.95"        # Change this value when upgrading upx
+  - "{ [ -f upx/$UPXVER/upx ]; } ||
+      { curl -OL https://github.com/upx/upx/releases/download/v${UPXVER}/upx-${UPXVER}-amd64_linux.tar.xz;
+        tar xvf upx-${UPXVER}-amd64_linux.tar.xz;
+        mkdir -p upx;
+        mv upx-${UPXVER}-amd64_linux upx/${UPXVER};
+      }"
+  - export PATH="$PWD/upx/${UPXVER}/:$PATH"
+  - upx --version | grep -E '^upx'
 
 script:
   # Compile the static binary using musl.
