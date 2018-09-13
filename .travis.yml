@@ -17,7 +17,7 @@ install:
 
 script:
   - nim musl src/hello_musl.nim
-  - ldd ./src/hello_musl
+  - ldd ./src/hello_musl || true
   - ./src/hello_musl
 
 branches:
