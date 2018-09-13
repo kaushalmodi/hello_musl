@@ -30,6 +30,9 @@ task musl, "Builds an optimized static binary using musl":
     nimFileLen = len(nimFile)
   # echo "[debug] nimFile = " & nimFile
 
+  # nimFile = "foo.nim"     -> binFile = "foo"
+  # nimFile = "foo"         -> binFile = "foo"
+  # nimFile = "src/foo.nim" -> binFile = "src/foo"
   var binFile = nimFile
   if (nimFileLen > 4) and (nimFile[(nimFileLen-4) ..< nimFileLen].toLowerAscii == ".nim"):
     # Strip off the trailing ".nim" extension if it exists.
@@ -38,7 +41,7 @@ task musl, "Builds an optimized static binary using musl":
 
   # Run nim command
   let
-    nimArgs = "-d:musl -d:release --out:" & binFile & " c " & nimFile
+    nimArgs = "-d:musl -d:release c " & nimFile
   echo "\nRunning 'nim " & nimArgs & "' .."
   selfExec nimArgs
 
