@@ -1,5 +1,6 @@
 import macros  # for error
 import ospaths # for `/`
+import strutils
 
 # -d:musl
 when defined(musl):
@@ -29,7 +30,7 @@ task musl, "Builds an optimized static binary using musl":
   # echo "[debug] nimFile = " & nimFile
 
   var binFile = nimFile
-  if (nimFileLen > 4) and (nimFile[(nimFileLen-4) ..< nimFileLen] == ".nim"):
+  if (nimFileLen > 4) and (nimFile[(nimFileLen-4) ..< nimFileLen].toLowerAscii == ".nim"):
     # Strip off the trailing ".nim" extension if it exists.
     binFile = nimFile[0 ..< (nimFileLen-4)]
   # echo "[debug] binFile = " & binFile
