@@ -1,5 +1,5 @@
 from macros import error
-from strutils import toLowerAscii
+from ospaths import splitFile, `/`
 
 # -d:musl
 when defined(musl):
@@ -27,15 +27,9 @@ task musl, "Builds an optimized static binary using musl":
   let
     nimFile = paramStr(numParams) ## The nim file name *must* be the last.
     nimFileLen = len(nimFile)
+    (dirName, baseName, _) = splitFile(nimFile)
+    binFile = dirName / baseName  # Save the binary in the same dir as the nim file
   # echo "[debug] nimFile = " & nimFile
-
-  # nimFile = "foo.nim"     -> binFile = "foo"
-  # nimFile = "foo"         -> binFile = "foo"
-  # nimFile = "src/foo.nim" -> binFile = "src/foo"
-  var binFile = nimFile
-  if (nimFileLen > 4) and (nimFile[(nimFileLen-4) ..< nimFileLen].toLowerAscii == ".nim"):
-    # Strip off the trailing ".nim" extension if it exists.
-    binFile = nimFile[0 ..< (nimFileLen-4)]
   # echo "[debug] binFile = " & binFile
 
   # Run nim command
