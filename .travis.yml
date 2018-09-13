@@ -16,8 +16,13 @@ install:
   - nim -v
 
 script:
+  # Compile the static binary using musl.
   - nim musl src/hello_musl.nim
+  # See the size of the compiled binary.
+  - ls -latr ./src/
+  # See that the binary is not dynamic.
   - ldd ./src/hello_musl || true
+  # Run the binary.
   - ./src/hello_musl
 
 branches:
