@@ -4,7 +4,7 @@ from ospaths import splitFile, `/`
 # -d:musl
 when defined(musl):
   var muslGccPath: string
-  echo "Building a static binary using musl .."
+  echo "  [-d:musl] Building a static binary using musl .."
   muslGccPath = findExe("musl-gcc")
   # echo "debug: " & muslGccPath
   if muslGccPath == "":
@@ -26,25 +26,23 @@ task musl, "Builds an optimized static binary using musl":
 
   let
     nimFile = paramStr(numParams) ## The nim file name *must* be the last.
-    nimFileLen = len(nimFile)
     (dirName, baseName, _) = splitFile(nimFile)
     binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-  # echo "[debug] nimFile = " & nimFile
-  # echo "[debug] binFile = " & binFile
+    nimArgs = "c -d:musl -d:release " & nimFile
+  # echo "[debug] nimFile = " & nimFile & ", binFile = " & binFile
 
   # Run nim command
-  let
-    nimArgs = "c -d:musl -d:release " & nimFile
   echo "\nRunning 'nim " & nimArgs & "' .."
   selfExec nimArgs
 
+  # Binary size optimization
+  echo ""
   if findExe("strip") != "":
-    echo "\nRunning 'strip -s' .."
+    echo "Running 'strip -s' .."
     exec "strip -s " & binFile
-
   if findExe("upx") != "":
     # https://github.com/upx/upx/releases/
-    echo "\nRunning 'upx' .."
+    echo "Running 'upx' .."
     exec "upx " & binFile
 
   echo "\nCreated binary: " & binFile
