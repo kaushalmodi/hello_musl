@@ -20,8 +20,8 @@ task musl, "Builds an optimized static binary using musl":
   ## Usage: nim musl <.nim file path>
   let
     numParams = paramCount()
-  if numParams <= 1:
-    error("The 'musl' sub-command needs the Nim file-name argument. Example: nim musl FILE.nim.")
+  if numParams != 2:
+    error("The 'musl' sub-command needs exactly one argument (Nim file). Example: nim musl FILE.nim.")
 
   let
     # The nim file name must be the last.
@@ -36,12 +36,17 @@ task musl, "Builds an optimized static binary using musl":
   # echo "[debug] binFile = " & binFile
 
   rmFile binFile
-  exec "nim -d:musl -d:release --out:" & binFile & " c " & nimFile
+  # Run nim command
+  let
+    nimArgs = "-d:musl -d:release --out:" & binFile & " c " & nimFile
+  echo "\nRunning 'nim " & nimArgs & "' .."
+  selfExec nimArgs
+
   if findExe("strip") != "":
-    echo "Running 'strip -s' .."
+    echo "\nRunning 'strip -s' .."
     exec "strip -s " & binFile
   if findExe("upx") != "":
     # https://github.com/upx/upx/releases/
-    echo "Running 'upx' .."
+    echo "\nRunning 'upx' .."
     exec "upx " & binFile
-  echo "Created binary: " & binFile
+  echo "\nCreated binary: " & binFile
