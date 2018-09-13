@@ -2,8 +2,8 @@ import macros  # for error
 import ospaths # for `/`
 
 # -d:musl
-var muslGccPath: string
 when defined(musl):
+  var muslGccPath: string
   echo "Building a static binary using musl .."
   muslGccPath = findExe("musl-gcc")
   # echo "debug: " & muslGccPath
