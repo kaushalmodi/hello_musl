@@ -1,5 +1,4 @@
 from macros import error
-from ospaths import `/`
 from strutils import toLowerAscii
 
 # -d:musl
