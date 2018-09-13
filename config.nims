@@ -35,7 +35,6 @@ task musl, "Builds an optimized static binary using musl":
     binFile = nimFile[0 ..< (nimFileLen-4)]
   # echo "[debug] binFile = " & binFile
 
-  rmFile binFile
   # Run nim command
   let
     nimArgs = "-d:musl -d:release --out:" & binFile & " c " & nimFile
@@ -45,8 +44,10 @@ task musl, "Builds an optimized static binary using musl":
   if findExe("strip") != "":
     echo "\nRunning 'strip -s' .."
     exec "strip -s " & binFile
+
   if findExe("upx") != "":
     # https://github.com/upx/upx/releases/
     echo "\nRunning 'upx' .."
     exec "upx " & binFile
+
   echo "\nCreated binary: " & binFile
