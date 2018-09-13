@@ -10,9 +10,10 @@ bin           = @["hello_musl"]
 
 # Dependencies
 
-requires "nim >= 0.18.1"
+requires "nim >= 0.18.1"        # For findExe in nimscript
 
 import ospaths # for `/`
+
 let
   pkgName = "hello_musl"
   srcFile = "src" / (pkgName & ".nim")

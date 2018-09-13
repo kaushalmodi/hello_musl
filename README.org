@@ -5,9 +5,9 @@
 - *musl* library: [[https://www.musl-libc.org/download.html]]
   - Note the path to the ~musl-gcc~ binary.
 * How to generate static binary
-1. Update the ~muslGcc~ constant in ~config.nims~ with *your* path to
-   ~musl-gcc~ binary.
-2. Run ~nimble musl~.
+#+begin_example
+nimble musl
+#+end_example
 
 That will generate ~hello_musl~ binary in the current directory.
 
@@ -19,7 +19,7 @@ That will generate ~hello_musl~ binary in the current directory.
 - [[https://hookrace.net/blog/nim-binary-size/#using-the-c-standard-library]]
 - [[https://www.reddit.com/r/programming/comments/2wk7q6/static_linking_with_nim/corwtl7/]]
 * TODO Todo-List
-- [ ] Don't hard-code the ~muslGcc~ const in ~config.nims~
+- [X] Don't hard-code the ~muslGcc~ const in ~config.nims~
 - [ ] Not require ~hello_musl.nimble~
   - Currently that is needed just to add the ~-d:musl~ and
     ~-d:release~ switches, and then to auto-run ~strip -s~.
