@@ -28,6 +28,51 @@ That will generate ~hello_musl~ binary in ~src/~ directory.
 
 - ~ldd ./src/hello_musl~ will print "not a dynamic executable".
 - ~./src/hello_musl~ will print "Hello, World!"
+*** Sample Travis CI log
+[[https://travis-ci.org/kaushalmodi/hello_musl/builds][All Travis CI logs]]
+#+begin_example
+$ nim musl src/hello_musl.nim
+Hint:used config file '/home/travis/.choosenim/toolchains/nim-#devel/config/nim.cfg' [Conf]
+Hint:used config file '/home/travis/build/kaushalmodi/hello_musl/config.nims' [Conf]
+Running 'nim c -d:musl -d:release src/hello_musl.nim' ..
+Hint:used config file '/home/travis/.choosenim/toolchains/nim-#devel/config/nim.cfg' [Conf]
+Hint:used config file '/home/travis/build/kaushalmodi/hello_musl/config.nims' [Conf]
+  [-d:musl] Building a static binary using musl ..
+Hint:system [Processing]
+Hint:hello_musl [Processing]
+CC: stdlib_system
+CC: hello_musl_hello_musl
+Hint: [Link]
+Hint:operation successful (27180 lines compiled; 1.100 sec total; 38.77MiB peakmem; Release Build) [SuccessX]
+Running 'strip -s' ..
+Running 'upx --best' ..
+                       Ultimate Packer for eXecutables
+                          Copyright (C) 1996 - 2018
+UPX 3.95        Markus Oberhumer, Laszlo Molnar & John Reiser   Aug 26th 2018
+        File size         Ratio      Format      Name
+   --------------------   ------   -----------   -----------
+     30120 ->     16200   53.78%   linux/amd64   hello_musl
+Packed 1 file.
+Created binary: src/hello_musl
+The command "nim musl src/hello_musl.nim" exited with 0.
+
+$ ls -latr ./src/
+total 20
+-rw-r--r-- 1 travis travis   176 Sep 13 20:43 hello_musl.nim
+drwxr-xr-x 5 travis travis   221 Sep 13 20:48 ..
+-rwxr-xr-x 1 travis travis 16200 Sep 13 20:48 hello_musl
+drwxr-xr-x 2 travis travis    46 Sep 13 20:48 .
+The command "ls -latr ./src/" exited with 0.
+
+$ ldd ./src/hello_musl || true
+	not a dynamic executable
+The command "ldd ./src/hello_musl || true" exited with 0.
+
+$ ./src/hello_musl
+Hello, World!
+The command "./src/hello_musl" exited with 0.
+Done. Your build exited with 0.
+#+end_example
 ** For your Nim project
 - Copy the [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] to your Nim project.
 - While being the same directory as ~config.nims~, do:
