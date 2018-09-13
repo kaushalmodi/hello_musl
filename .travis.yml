@@ -1,4 +1,9 @@
 language: c
+sudo: required
+
+cache:
+  directories:
+    - nim
 
 addons:
   apt:
@@ -8,12 +13,28 @@ addons:
 
 install:
   - echo "Installing Nim devel .."
-  - export CHOOSENIM_NO_ANALYTICS=1
-  - export CHOOSENIM_CHOOSE_VERSION=devel
-  - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
-  - sh init.sh -y
-  - export PATH=~/.nimble/bin:$PATH
+  # Build nim from its devel branch.
+  # Check version of remote branch.
+  - export NIMVER="$(git ls-remote https://github.com/nim-lang/Nim devel | cut -f 1)"
+
+  # After building nim, wipe csources to save on cache space.
+  - "{ [ -f nim/$NIMVER/bin/nim ] && [ -f nim/$NIMVER/bin/nimble ]; } ||
+      { rm -rf nim;
+        mkdir -p nim;
+        git clone --single-branch --branch devel --depth=1 https://github.com/nim-lang/Nim nim/$NIMVER;
+        cd nim/$NIMVER;
+        sh build_all.sh;
+        rm -rf csources;
+        cd ../..;
+      }"
+  - export PATH="$PWD/nim/$NIMVER/bin:$PATH"
+  # - export CHOOSENIM_NO_ANALYTICS=1
+  # - export CHOOSENIM_CHOOSE_VERSION=devel
+  # - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
+  # - sh init.sh -y
+  # - export PATH=~/.nimble/bin:$PATH
   - nim -v
+
   - echo "Installing upx .."
   - curl -OL https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
   - tar xvf upx-3.95-amd64_linux.tar.xz
@@ -34,4 +55,5 @@ branches:
 # References:
 # choosenim: https://github.com/mratsim/Arraymancer/blob/master/.travis.yml
 # musl: https://github.com/BurntSushi/ripgrep/blob/master/.travis.yml
+# nim build caching: https://github.com/status-im/nimbus/blob/master/.travis.yml
 # https://github.com/nim-lang/Nim/wiki/TravisCI
