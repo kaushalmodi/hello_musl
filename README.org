@@ -4,6 +4,11 @@
 - Nim: [[https://nim-lang.org/]]
 - *musl* library: [[https://www.musl-libc.org/download.html]]
   - Note the path to the ~musl-gcc~ binary.
+** Optional
+These optional command-line utilities for binary size optimization
+will be run automatically if present.
+- ~strip~ (from ~binutils~): [[https://sourceware.org/binutils/docs/binutils/strip.html]]
+- ~upx~: [[https://github.com/upx/upx]]
 * How to generate static binary
 #+begin_example
 nim musl src/hello_musl.nim
@@ -22,6 +27,7 @@ That will generate ~hello_musl~ binary in ~src/~ directory.
 * References
 - [[https://github.com/nim-lang/Nim/wiki/Using-nimscript-for-configuration]]
 - [[https://nim-lang.org/docs/nims.html]]
+  - [[https://nim-lang.org/docs/nimscript.html]]
 - [[https://hookrace.net/blog/nim-binary-size/#using-the-c-standard-library]]
 - [[https://www.reddit.com/r/programming/comments/2wk7q6/static_linking_with_nim/corwtl7/]]
 * TODO Todo-List
