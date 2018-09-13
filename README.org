@@ -1,25 +1,25 @@
 * Prerequisites
 - OS: One of Linux x86 (32/64), ARM (32/64), MIPS (32/64), PowerPC
-  (32/64), S390X, SuperH, Microblaze, OpenRISC ([[https://www.musl-libc.org/intro.html][ref]]).
-- Nim: [[https://nim-lang.org/]]
+  (32/64), S390X, SuperH, Microblaze, OpenRISC ([[https://www.musl-libc.org/intro.html][ref]])
+- Nim: [[https://nim-lang.org/]] (built from [[https://github.com/nim-lang/Nim/tree/devel][*devel*]] branch as of <2018-09-13 Thu>)
 - *musl* library: [[https://www.musl-libc.org/download.html]]
-  - Note the path to the ~musl-gcc~ binary.
 ** Optional
 These optional command-line utilities for binary size optimization
-will be run automatically if present.
+will be run automatically one by one, if present.
 - ~strip~ (from ~binutils~): [[https://sourceware.org/binutils/docs/binutils/strip.html]]
 - ~upx~: [[https://github.com/upx/upx]]
-* How to generate static binary
-#+begin_example
-nim musl src/hello_musl.nim
-#+end_example
+* Generating static binary
+** For this example ~hello_musl~ project
+1. ~git clone https://github.com/kaushalmodi/hello_musl~
+2. ~cd hello_musl~
+3. ~nim musl src/hello_musl.nim~
 
 That will generate ~hello_musl~ binary in ~src/~ directory.
 
 - ~ldd ./src/hello_musl~ will print "not a dynamic executable".
 - ~./src/hello_musl~ will print "Hello, World!"
-* How to use the ~config.nims~
-- Copy the ~config.nims~ to your Nim project.
+** For your Nim project
+- Copy the [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] to your Nim project.
 - While being the same directory as ~config.nims~, do:
   #+begin_example
   nim musl <path/to/your/nim/file>
