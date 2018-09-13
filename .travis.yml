@@ -13,7 +13,6 @@ install:
   - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
   - sh init.sh -y
   - export PATH=~/.nimble/bin:$PATH
-  - echo "export PATH=~/.nimble/bin:$PATH" >> ~/.profile
   - nim -v
   - echo "Installing upx .."
   - curl -OL https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
@@ -23,8 +22,6 @@ install:
 script:
   # Compile the static binary using musl.
   - nim musl src/hello_musl.nim
-  # See the size of the compiled binary.
-  - ls -latr ./src/
   # See that the binary is not dynamic.
   - ldd ./src/hello_musl || true
   # Run the binary.

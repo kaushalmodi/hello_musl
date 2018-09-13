@@ -56,14 +56,6 @@ Packed 1 file.
 Created binary: src/hello_musl
 The command "nim musl src/hello_musl.nim" exited with 0.
 
-$ ls -latr ./src/
-total 20
--rw-r--r-- 1 travis travis   176 Sep 13 20:43 hello_musl.nim
-drwxr-xr-x 5 travis travis   221 Sep 13 20:48 ..
--rwxr-xr-x 1 travis travis 16200 Sep 13 20:48 hello_musl
-drwxr-xr-x 2 travis travis    46 Sep 13 20:48 .
-The command "ls -latr ./src/" exited with 0.
-
 $ ldd ./src/hello_musl || true
 	not a dynamic executable
 The command "ldd ./src/hello_musl || true" exited with 0.
