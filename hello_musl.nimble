@@ -18,7 +18,7 @@ let
   srcFile = "src" / (pkgName & ".nim")
   binFile = pkgName
 
-task stat, "Builds an optimized static binary using musl":
+task musl, "Builds an optimized static binary using musl":
   rmFile binFile
-  exec "nim musl -d:release --out:" & binFile & " " & srcFile
+  exec "nim -d:musl -d:release --out:" & binFile & " c " & srcFile
   exec "strip -s " & binFile
