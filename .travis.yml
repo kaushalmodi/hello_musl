@@ -7,6 +7,7 @@ addons:
       - musl-tools
 
 install:
+  - echo "Installing Nim devel .."
   - export CHOOSENIM_NO_ANALYTICS=1
   - export CHOOSENIM_CHOOSE_VERSION=devel
   - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
@@ -14,6 +15,10 @@ install:
   - export PATH=~/.nimble/bin:$PATH
   - echo "export PATH=~/.nimble/bin:$PATH" >> ~/.profile
   - nim -v
+  - echo "Installing upx .."
+  - curl -OL https://github.com/upx/upx/releases/download/v3.95/upx-3.95-amd64_linux.tar.xz
+  - tar xvf upx-3.95-amd64_linux.tar.xz
+  - export PATH=./upx-3.95-amd64_linux:$PATH
 
 script:
   # Compile the static binary using musl.
