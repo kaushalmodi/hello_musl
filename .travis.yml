@@ -58,8 +58,20 @@ branches:
   except:
     - gh-pages
 
+before_deploy:
+  - cp ./src/hello_musl .
+  - tar caf hello_musl.Linux_64bit_musl.tar.xz hello_musl
+deploy:
+  provider: releases
+  api_key: "$GITHUB_OAUTH_TOKEN"
+  file: "hello_musl.Linux_64bit_musl.tar.xz"
+  skip_cleanup: true
+  on:
+    tags: true
+
 # References:
 # choosenim: https://github.com/mratsim/Arraymancer/blob/master/.travis.yml
 # musl: https://github.com/BurntSushi/ripgrep/blob/master/.travis.yml
 # nim build caching: https://github.com/status-im/nimbus/blob/master/.travis.yml
+# https://docs.travis-ci.com/user/deployment/releases/
 # https://github.com/nim-lang/Nim/wiki/TravisCI
