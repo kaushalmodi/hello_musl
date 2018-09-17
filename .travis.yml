@@ -14,7 +14,7 @@ env:
     - ASSETFILE="${PROGNAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
     - NIMREPO="https://github.com/nim-lang/Nim"
     - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
-    - NIMDIR="${PWD}/nim/${NIMVER}"
+    - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
     - UPXVER="3.95"             # Change this value when upgrading upx
 
 addons:
@@ -39,17 +39,17 @@ install:
         ./koch boot -d:release;
         rm -rf csources;
       )"
-  - export PATH="${NIMDIR}/bin:$PATH"
+  - export PATH="${NIMDIR}/bin:${PATH}"
   - nim -v
 
   - echo "Installing upx .."
-  - "{ [ -f upx/$UPXVER/upx ]; } ||
+  - "{ [ -f upx/${UPXVER}/upx ]; } ||
       { curl -OL https://github.com/upx/upx/releases/download/v${UPXVER}/upx-${UPXVER}-amd64_linux.tar.xz;
         tar xvf upx-${UPXVER}-amd64_linux.tar.xz;
         mkdir -p upx;
         mv upx-${UPXVER}-amd64_linux upx/${UPXVER};
       }"
-  - export PATH="$PWD/upx/${UPXVER}/:$PATH"
+  - export PATH="${TRAVIS_BUILD_DIR}/upx/${UPXVER}/:${PATH}"
   - upx --version | grep -E '^upx'
 
 script:
@@ -70,7 +70,7 @@ before_deploy:
   - tar caf "${ASSETFILE}" "${PROGNAME}"
 deploy:
   provider: releases
-  api_key: "$GITHUB_OAUTH_TOKEN"
+  api_key: "${GITHUB_OAUTH_TOKEN}"
   file: "${ASSETFILE}"
   skip_cleanup: true
   on:
