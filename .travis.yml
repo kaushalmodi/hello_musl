@@ -11,6 +11,7 @@ env:
     - PROGNAME="$(basename ${TRAVIS_BUILD_DIR})" # /travis/build/kaushalmodi/hello_musl -> hello_musl
     - NIMFILE="src/${PROGNAME}.nim"
     - BINFILE="src/${PROGNAME}"
+    - ASSETFILE="${PROGNAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
     - NIMREPO="https://github.com/nim-lang/Nim"
     - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
     - NIMDIR="${PWD}/nim/${NIMVER}"
@@ -66,11 +67,11 @@ script:
 before_deploy:
   - cd "${TRAVIS_BUILD_DIR}"
   - cp "${BINFILE}" "${PROGNAME}"
-  - tar caf "${PROGNAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz" "${PROGNAME}"
+  - tar caf "${ASSETFILE}" "${PROGNAME}"
 deploy:
   provider: releases
   api_key: "$GITHUB_OAUTH_TOKEN"
-  file: "${PROGNAME}.Linux_64bit_musl.tar.xz"
+  file: "${ASSETFILE}"
   skip_cleanup: true
   on:
     tags: true
