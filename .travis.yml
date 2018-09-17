@@ -6,6 +6,13 @@ cache:
     - nim
     - upx
 
+env:
+  global:
+    - NIMREPO="https://github.com/nim-lang/Nim"
+    - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
+    - NIMDIR="${PWD}/nim/${NIMVER}"
+    - UPXVER="3.95"             # Change this value when upgrading upx
+
 addons:
   apt:
     packages:
@@ -13,30 +20,20 @@ addons:
       - musl-tools
 
 install:
-  - echo "Installing Nim devel .."
-  # Build nim from its devel branch.
-  # Check version of remote branch.
-  - export NIMVER="$(git ls-remote https://github.com/nim-lang/Nim devel | cut -f 1)"
+  - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
-  - "{ [ -f nim/$NIMVER/bin/nim ] && [ -f nim/$NIMVER/bin/nimble ]; } ||
+  - "{ [ -f ${NIMDIR}/bin/nim ] && [ -f ${NIMDIR}/bin/nimble ]; } ||
       { rm -rf nim;
         mkdir -p nim;
-        git clone --single-branch --branch devel --depth=1 https://github.com/nim-lang/Nim nim/$NIMVER;
-        cd nim/$NIMVER;
+        git clone --single-branch --branch devel --depth=1 ${NIMREPO} ${NIMDIR};
+        cd ${NIMDIR};
         sh build_all.sh;
         rm -rf csources;
-        cd ../..;
       }"
-  - export PATH="$PWD/nim/$NIMVER/bin:$PATH"
-  # - export CHOOSENIM_NO_ANALYTICS=1
-  # - export CHOOSENIM_CHOOSE_VERSION=devel
-  # - curl https://nim-lang.org/choosenim/init.sh -sSf > init.sh
-  # - sh init.sh -y
-  # - export PATH=~/.nimble/bin:$PATH
+  - export PATH="${NIMDIR}/bin:$PATH"
   - nim -v
 
   - echo "Installing upx .."
-  - export UPXVER="3.95"        # Change this value when upgrading upx
   - "{ [ -f upx/$UPXVER/upx ]; } ||
       { curl -OL https://github.com/upx/upx/releases/download/v${UPXVER}/upx-${UPXVER}-amd64_linux.tar.xz;
         tar xvf upx-${UPXVER}-amd64_linux.tar.xz;
@@ -53,10 +50,6 @@ script:
   - ldd ./src/hello_musl || true
   # Run the binary.
   - ./src/hello_musl
-
-branches:
-  except:
-    - gh-pages
 
 before_deploy:
   - cp ./src/hello_musl .
