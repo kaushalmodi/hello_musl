@@ -12,7 +12,17 @@ when defined(musl):
   switch("gcc.exe", muslGccPath)
   switch("gcc.linkerexe", muslGccPath)
   switch("passL", "-static")
-  switch("opt", "size")
+
+proc binOptimize(binFile: string) =
+  ## Optimize size of the ``binFile`` binary.
+  echo ""
+  if findExe("strip") != "":
+    echo "Running 'strip -s' .."
+    exec "strip -s " & binFile
+  if findExe("upx") != "":
+    # https://github.com/upx/upx/releases/
+    echo "Running 'upx --best' .."
+    exec "upx --best " & binFile
 
 # nim musl foo.nim
 task musl, "Builds an optimized static binary using musl":
@@ -28,21 +38,14 @@ task musl, "Builds an optimized static binary using musl":
     nimFile = paramStr(numParams) ## The nim file name *must* be the last.
     (dirName, baseName, _) = splitFile(nimFile)
     binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-    nimArgs = "c -d:musl -d:release " & nimFile
+    nimArgs = "c -d:musl -d:release --opt:size " & nimFile
   # echo "[debug] nimFile = " & nimFile & ", binFile = " & binFile
 
-  # Run nim command
+  # Build binary
   echo "\nRunning 'nim " & nimArgs & "' .."
   selfExec nimArgs
 
-  # Binary size optimization
-  echo ""
-  if findExe("strip") != "":
-    echo "Running 'strip -s' .."
-    exec "strip -s " & binFile
-  if findExe("upx") != "":
-    # https://github.com/upx/upx/releases/
-    echo "Running 'upx --best' .."
-    exec "upx --best " & binFile
+  # Optimize binary
+  binOptimize(binFile)
 
   echo "\nCreated binary: " & binFile
