@@ -39,6 +39,10 @@ install:
         ./koch boot -d:release;
         rm -rf csources;
       )"
+  # - "{ [ -f ${NIMDIR}/bin/nimble ]; } ||
+  #     ( cd ${NIMDIR};
+  #       ./koch tools;
+  #     )"
   - export PATH="${NIMDIR}/bin:${PATH}"
   - nim -v
 
