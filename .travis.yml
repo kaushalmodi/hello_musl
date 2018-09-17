@@ -27,7 +27,12 @@ install:
         mkdir -p nim;
         git clone --single-branch --branch devel --depth=1 ${NIMREPO} ${NIMDIR};
         cd ${NIMDIR};
-        sh build_all.sh;
+        [ -d csources ] || git clone --depth 1 https://github.com/nim-lang/csources.git;
+        cd csources;
+        sh build.sh;
+        cd ..;
+        ./bin/nim c koch;
+        ./koch boot -d:release;
         rm -rf csources;
       }"
   - export PATH="${NIMDIR}/bin:$PATH"
