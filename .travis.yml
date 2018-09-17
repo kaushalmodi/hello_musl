@@ -25,7 +25,7 @@ addons:
 install:
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
-  - "{ [ -f ${NIMDIR}/bin/nim ] && [ -f ${NIMDIR}/bin/nimble ]; } ||
+  - "{ [ -f ${NIMDIR}/bin/nim ]; } ||
       ( rm -rf nim;
         mkdir -p nim;
         git clone --single-branch --branch devel --depth=1 ${NIMREPO} ${NIMDIR};
