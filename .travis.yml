@@ -8,6 +8,9 @@ cache:
 
 env:
   global:
+    - PROGNAME="$(basename ${TRAVIS_BUILD_DIR})" # /travis/build/kaushalmodi/hello_musl -> hello_musl
+    - NIMFILE="src/${PROGNAME}.nim"
+    - BINFILE="src/${PROGNAME}"
     - NIMREPO="https://github.com/nim-lang/Nim"
     - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
     - NIMDIR="${PWD}/nim/${NIMVER}"
@@ -23,7 +26,7 @@ install:
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ] && [ -f ${NIMDIR}/bin/nimble ]; } ||
-      { rm -rf nim;
+      ( rm -rf nim;
         mkdir -p nim;
         git clone --single-branch --branch devel --depth=1 ${NIMREPO} ${NIMDIR};
         cd ${NIMDIR};
@@ -34,7 +37,7 @@ install:
         ./bin/nim c koch;
         ./koch boot -d:release;
         rm -rf csources;
-      }"
+      )"
   - export PATH="${NIMDIR}/bin:$PATH"
   - nim -v
 
@@ -49,20 +52,25 @@ install:
   - upx --version | grep -E '^upx'
 
 script:
+  # Ensure that you are in repo/build root now.
+  - cd "${TRAVIS_BUILD_DIR}"
+  - echo "NIMFILE = ${NIMFILE}"
+  - echo "BINFILE = ${BINFILE}"
   # Compile the static binary using musl.
-  - nim musl src/hello_musl.nim
+  - nim musl "${NIMFILE}"
   # See that the binary is not dynamic.
-  - ldd ./src/hello_musl || true
+  - ldd "${BINFILE}" || true
   # Run the binary.
-  - ./src/hello_musl
+  - "${BINFILE}"
 
 before_deploy:
-  - cp ./src/hello_musl .
-  - tar caf hello_musl.Linux_64bit_musl.tar.xz hello_musl
+  - cd "${TRAVIS_BUILD_DIR}"
+  - cp "${BINFILE}" "${PROGNAME}"
+  - tar caf "${PROGNAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz" "${PROGNAME}"
 deploy:
   provider: releases
   api_key: "$GITHUB_OAUTH_TOKEN"
-  file: "hello_musl.Linux_64bit_musl.tar.xz"
+  file: "${PROGNAME}.Linux_64bit_musl.tar.xz"
   skip_cleanup: true
   on:
     tags: true
@@ -73,3 +81,4 @@ deploy:
 # nim build caching: https://github.com/status-im/nimbus/blob/master/.travis.yml
 # https://docs.travis-ci.com/user/deployment/releases/
 # https://github.com/nim-lang/Nim/wiki/TravisCI
+# https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
