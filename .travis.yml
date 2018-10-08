@@ -82,6 +82,11 @@ deploy:
   on:
     tags: true
 
+notifications:
+  email:
+    on_success: never # default: change
+    on_failure: always # default: always
+
 # References:
 # choosenim: https://github.com/mratsim/Arraymancer/blob/master/.travis.yml
 # musl: https://github.com/BurntSushi/ripgrep/blob/master/.travis.yml
