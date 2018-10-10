@@ -3,3 +3,4 @@
 lib/
 pcre-*
 /src/hello_musl_pcre
+pcre/

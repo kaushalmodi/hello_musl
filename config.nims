@@ -1,6 +1,36 @@
 from macros import error
 from ospaths import splitFile, `/`
 
+const
+  pcreVersion = getEnv("PCREVER", "8.42")
+  pcreSourceDir = "pcre-" & pcreVersion
+  pcreArchiveFile = pcreSourceDir & ".tar.bz2"
+  pcreDownloadLink = "https://downloads.sourceforge.net/pcre/" & pcreArchiveFile
+  pcreLibDir = (thisDir() / "pcre/") & pcreVersion
+  pcreLibFile = pcreLibDir / "lib/libpcre.a"
+
+task installPcre, "Installs PCRE using musl-gcc":
+  if not existsFile(pcreLibFile):
+    if not existsDir(pcreSourceDir):
+      if not existsFile(pcreArchiveFile):
+        exec("curl -LO " & pcreDownloadLink)
+      exec("tar xf " & pcreArchiveFile)
+    else:
+      echo "PCRE lib source dir " & pcreSourceDir & " already exists"
+    withDir pcreSourceDir:
+      putEnv("C", "musl-gcc -static")
+      # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
+      exec("./configure " &
+        "--prefix=" & pcreLibDir & " " &
+        "--enable-pcre16 " &
+        "--enable-pcre32 " &
+        "--disable-shared")
+      exec("make")
+      exec("make install")
+  else:
+    echo pcreLibFile & " already exists"
+  setCommand("nop")
+
 # -d:musl
 when defined(musl):
   var
@@ -14,28 +44,8 @@ when defined(musl):
   switch("gcc.linkerexe", muslGccPath)
   # -d:pcre
   when defined(pcre):
-    const
-      pcreVersion = "8.42"
-      pcreSourceDir = "pcre-" & pcreVersion
-      pcreArchiveFile = pcreSourceDir & ".tar.bz2"
-      pcreDownloadLink = "https://downloads.sourceforge.net/pcre/" & pcreArchiveFile
-      pcreLibDir = (thisDir() / "lib/pcre/") & pcreVersion
-      pcreLibFile = pcreLibDir / "lib/libpcre.a"
-    when defined(installPcre):
-      if not existsDir(pcreSourceDir):
-        if not existsFile(pcreArchiveFile):
-          exec("curl -LO " & pcreDownloadLink)
-        exec("tar xf " & pcreArchiveFile)
-      withDir pcreSourceDir:
-        putEnv("C", "musl-gcc -static")
-        # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
-        exec("./configure " &
-          "--prefix=" & pcreLibDir & " " &
-          "--enable-pcre16 " &
-          "--enable-pcre32 " &
-          "--disable-shared")
-        exec("make")
-        exec("make install")
+    if not existsFile(pcreLibFile):
+      selfExec "installPcre"    # Install PCRE in current dir if pcreLibFile is not found
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
   switch("passL", "-static")
@@ -61,8 +71,8 @@ task musl, "Builds an optimized static binary using musl":
   if numParams >= 4:
     error("The 'musl' sub-command accepts at most 2 arguments (but " &
       $(numParams-1) & " were detected)." &
-      "\n  Usage Examples: nim musl FILE.nim." &
-      "\n                  nim musl -d:pcre FILE.nim.")
+      "\n  Usage Examples: nim musl FILE.nim" &
+      "\n                  nim musl -d:pcre FILE.nim")
 
   when defined(pcre):
     extraDefines.add("-d:pcre")

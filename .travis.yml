@@ -5,6 +5,7 @@ cache:
   directories:
     - nim
     - upx
+    - pcre
 
 env:
   global:
@@ -24,6 +25,7 @@ env:
     - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
     - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
     - UPXVER="3.95"             # Change this value when upgrading upx
+    - PCREVER="8.42"            # Change this value when upgrading pcre
 
 addons:
   apt:
