@@ -48,7 +48,7 @@ when defined(musl):
   when defined(pcre):
     if not existsFile(pcreLibFile):
       selfExec "installPcre"    # Install PCRE in current dir if pcreLibFile is not found
-    putEnv("CFLAGS", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
+    switch("passC", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
   switch("passL", "-static")
