@@ -1,2 +1,5 @@
 /hello_musl
 /src/hello_musl
+lib/
+pcre-*
+/src/hello_musl_pcre

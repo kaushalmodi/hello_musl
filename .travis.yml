@@ -8,10 +8,18 @@ cache:
 
 env:
   global:
-    - PROGNAME="$(basename ${TRAVIS_BUILD_DIR})" # /travis/build/kaushalmodi/hello_musl -> hello_musl
-    - NIMFILE="src/${PROGNAME}.nim"
-    - BINFILE="src/${PROGNAME}"
-    - ASSETFILE="${PROGNAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
+    - REPONAME="$(basename ${TRAVIS_BUILD_DIR})" # /travis/build/kaushalmodi/hello_musl -> hello_musl
+    #
+    - PROG1="hello_musl"
+    - NIMFILE1="src/${PROG1}.nim"
+    - BINFILE1="src/${PROG1}"
+    #
+    - PROG2="hello_musl_pcre"
+    - NIMFILE2="src/${PROG2}.nim"
+    - BINFILE2="src/${PROG2}"
+    #
+    - DIST_DIR="${TRAVIS_BUILD_DIR}/dist"
+    - ASSETFILE="${REPONAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
     - NIMREPO="https://github.com/nim-lang/Nim"
     - NIMVER="$(git ls-remote ${NIMREPO} devel | cut -f 1)"
     - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
@@ -59,21 +67,35 @@ install:
 script:
   # Ensure that you are in repo/build root now.
   - cd "${TRAVIS_BUILD_DIR}"
-  - echo "NIMFILE = ${NIMFILE}"
-  - echo "BINFILE = ${BINFILE}"
+  - echo "NIMFILE1 = ${NIMFILE1}"
+  - echo "BINFILE1 = ${BINFILE1}"
+  - echo "NIMFILE2 = ${NIMFILE2}"
+  - echo "BINFILE2 = ${BINFILE2}"
   # Compile the static binary using musl.
   # --accept to say Yes to prompts like "Prompt: No local packages.json found, download it from internet? [y/N]"
   # - nimble install --depsOnly --accept
-  - nim musl "${NIMFILE}"
+  # PROG1
+  - nim musl "${NIMFILE1}"
   # See that the binary is not dynamic.
-  - ldd "${BINFILE}" || true
+  - ldd "${BINFILE1}" || true
   # Run the binary.
-  - "${BINFILE}"
+  - "${BINFILE1}"
+  # PROG2
+  - nim musl -d:pcre "${NIMFILE2}"
+  # See that the binary is not dynamic.
+  - ldd "${BINFILE2}" || true
+  # Run the binary.
+  - "${BINFILE2}"
 
 before_deploy:
   - cd "${TRAVIS_BUILD_DIR}"
-  - cp "${BINFILE}" "${PROGNAME}"
-  - tar caf "${ASSETFILE}" "${PROGNAME}"
+  - mkdir dist
+  - cp "${BINFILE1}" "${DIST_DIR}"
+  - cp "${BINFILE2}" "${DIST_DIR}"
+  # -C <DIR> tells tar to change the current directory to <DIR>, and
+  # then the "." means "add the entire current directory" (including
+  # hidden files and sub-directories).
+  - tar caf "${ASSETFILE}" -C "${DIST_DIR}" .
 deploy:
   provider: releases
   api_key: "${GITHUB_OAUTH_TOKEN}"

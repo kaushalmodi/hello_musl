@@ -3,14 +3,41 @@ from ospaths import splitFile, `/`
 
 # -d:musl
 when defined(musl):
-  var muslGccPath: string
+  var
+    muslGccPath: string
   echo "  [-d:musl] Building a static binary using musl .."
   muslGccPath = findExe("musl-gcc")
-  # echo "debug: " & muslGccPath
+  echo "debug: " & muslGccPath
   if muslGccPath == "":
     error("'musl-gcc' binary was not found in PATH.")
   switch("gcc.exe", muslGccPath)
   switch("gcc.linkerexe", muslGccPath)
+  # -d:pcre
+  when defined(pcre):
+    const
+      pcreVersion = "8.42"
+      pcreSourceDir = "pcre-" & pcreVersion
+      pcreArchiveFile = pcreSourceDir & ".tar.bz2"
+      pcreDownloadLink = "https://downloads.sourceforge.net/pcre/" & pcreArchiveFile
+      pcreLibDir = (thisDir() / "lib/pcre/") & pcreVersion
+      pcreLibFile = pcreLibDir / "lib/libpcre.a"
+    when defined(installPcre):
+      if not existsDir(pcreSourceDir):
+        if not existsFile(pcreArchiveFile):
+          exec("curl -LO " & pcreDownloadLink)
+        exec("tar xf " & pcreArchiveFile)
+      withDir pcreSourceDir:
+        putEnv("C", "musl-gcc -static")
+        # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
+        exec("./configure " &
+          "--prefix=" & pcreLibDir & " " &
+          "--enable-pcre16 " &
+          "--enable-pcre32 " &
+          "--disable-shared")
+        exec("make")
+        exec("make install")
+    switch("define", "usePcreHeader")
+    switch("passL", pcreLibFile)
   switch("passL", "-static")
 
 proc binOptimize(binFile: string) =
@@ -26,19 +53,25 @@ proc binOptimize(binFile: string) =
 
 # nim musl foo.nim
 task musl, "Builds an optimized static binary using musl":
-  ## Usage: nim musl <.nim file path>
+  ## Usage: nim musl [-d:pcre] <.nim file path>
+  var
+    extraDefines = " "
   let
     numParams = paramCount()
-  if numParams != 2:
-    error("The 'musl' sub-command needs exactly 1 argument, the Nim file (but " &
+  if numParams >= 4:
+    error("The 'musl' sub-command accepts at most 2 arguments (but " &
       $(numParams-1) & " were detected)." &
-      "\n  Usage Example: nim musl FILE.nim.")
+      "\n  Usage Examples: nim musl FILE.nim." &
+      "\n                  nim musl -d:pcre FILE.nim.")
+
+  when defined(pcre):
+    extraDefines.add("-d:pcre")
 
   let
     nimFile = paramStr(numParams) ## The nim file name *must* be the last.
     (dirName, baseName, _) = splitFile(nimFile)
     binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-    nimArgs = "c -d:musl -d:release --opt:size " & nimFile
+    nimArgs = "c -d:musl -d:release --opt:size" & extraDefines & " " & nimFile
   # echo "[debug] nimFile = " & nimFile & ", binFile = " & binFile
 
   # Build binary
