@@ -1,12 +1,12 @@
-#+title: Nim + musl
+#+title: Nim + musl + pcre
 #+author: Kaushal Modi
 
 [[https://travis-ci.org/kaushalmodi/hello_musl][https://travis-ci.org/kaushalmodi/hello_musl.svg?branch=master]]
 
 This repo contains a generic [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] that adds a Nim
 "sub-command" or task named *musl*. You can simply add that file to
-your Nim project, and run ~nim musl foo.nim~ (assuming that the below
-prerequisites are met).
+your Nim project, and run ~nim musl foo.nim~ or ~nim musl -d:pcre
+foo.nim~ (assuming that the below prerequisites are met).
 
 * Prerequisites
 - OS: One of Linux x86 (32/64), ARM (32/64), MIPS (32/64), PowerPC
@@ -22,12 +22,21 @@ will be run automatically one by one, if present.
 ** For this example ~hello_musl~ project
 1. ~git clone https://github.com/kaushalmodi/hello_musl~
 2. ~cd hello_musl~
-3. ~nim musl src/hello_musl.nim~
-
-That will generate ~hello_musl~ binary in ~src/~ directory.
-
-- ~ldd ./src/hello_musl~ will print "not a dynamic executable".
-- ~./src/hello_musl~ will print "Hello, World!"
+3. Example of static linking with just musl lib: ~nim musl src/hello_musl.nim~
+   - That will generate ~hello_musl~ binary in ~src/~ directory.
+   - ~ldd ./src/hello_musl~ will print "not a dynamic executable".
+   - ~./src/hello_musl~ will print:
+     #+begin_example
+     Hello, World!
+     #+end_example
+4. Example of static linking with musl+pcre libs: ~nim musl -d:pcre src/hello_musl_pcre.nim~
+   - That will generate ~hello_musl_pcre~ binary in ~src/~ directory.
+   - ~ldd ./src/hello_musl_pcre~ will print "not a dynamic executable".
+   - ~./src/hello_musl_pcre~ will print:
+     #+begin_example
+     Hello, World!
+     Bye, World!
+     #+end_example
 *** Sample Travis CI log
 [[https://travis-ci.org/kaushalmodi/hello_musl/builds][All Travis CI logs]]
 #+begin_example
@@ -69,7 +78,8 @@ Done. Your build exited with 0.
 - Copy the [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] to your Nim project.
 - While being the same directory as ~config.nims~, do:
   #+begin_example
-  nim musl <path/to/your/nim/file>
+  nim musl <path/to/your/nim/file>         # without static pcre lib linking
+  nim musl -d:pcre <path/to/your/nim/file> # *with* static pcre lib linking
   #+end_example
 * References
 - [[https://github.com/nim-lang/Nim/wiki/Using-nimscript-for-configuration]]
