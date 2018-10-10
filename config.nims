@@ -6,8 +6,10 @@ const
   pcreSourceDir = "pcre-" & pcreVersion
   pcreArchiveFile = pcreSourceDir & ".tar.bz2"
   pcreDownloadLink = "https://downloads.sourceforge.net/pcre/" & pcreArchiveFile
-  pcreLibDir = (thisDir() / "pcre/") & pcreVersion
-  pcreLibFile = pcreLibDir / "lib/libpcre.a"
+  pcreInstallDir = (thisDir() / "pcre/") & pcreVersion
+  pcreLibDir = pcreInstallDir / "lib"
+  pcreIncludeDir = pcreInstallDir / "include"
+  pcreLibFile = pcreLibDir / "libpcre.a"
 
 task installPcre, "Installs PCRE using musl-gcc":
   if not existsFile(pcreLibFile):
@@ -21,7 +23,7 @@ task installPcre, "Installs PCRE using musl-gcc":
       putEnv("C", "musl-gcc -static")
       # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
       exec("./configure " &
-        "--prefix=" & pcreLibDir & " " &
+        "--prefix=" & pcreInstallDir & " " &
         "--enable-pcre16 " &
         "--enable-pcre32 " &
         "--disable-shared")
@@ -46,6 +48,7 @@ when defined(musl):
   when defined(pcre):
     if not existsFile(pcreLibFile):
       selfExec "installPcre"    # Install PCRE in current dir if pcreLibFile is not found
+    putEnv("CFLAGS", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
   switch("passL", "-static")
