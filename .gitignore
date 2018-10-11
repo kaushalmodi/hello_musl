@@ -2,5 +2,8 @@
 /src/hello_musl
 lib/
 pcre-*
-/src/hello_musl_pcre
 pcre/
+openssl-*
+openssl/
+/src/hello_musl_pcre
+/src/hello_musl_ssl
