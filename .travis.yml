@@ -56,10 +56,12 @@ install:
   # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
   - sudo apt install linux-headers-$(uname -r)
   - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
+  - echo "header files in linux-headers"
+  - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
+  - echo "header files in linux-libc-dev"
+  - find /usr/src/linux-libc-dev/include -name "*.h" -print
   - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
   - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
-  - apt-file search linux/if_alg.h
-  - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/if_alg.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ]; } ||
