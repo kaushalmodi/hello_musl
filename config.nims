@@ -13,18 +13,30 @@ const
   pcreIncludeDir = pcreInstallDir / "include"
   pcreLibDir = pcreInstallDir / "lib"
   pcreLibFile = pcreLibDir / "libpcre.a"
-  # ssl
-  sslVersion = getEnv("SSLVER", "1.1.1")
-  sslSourceDir = "openssl-" & sslVersion
+  # libressl
+  sslVersion = getEnv("LIBRESSLVER", "2.8.1")
+  sslSourceDir = "libressl-" & sslVersion
   sslArchiveFile = sslSourceDir & ".tar.gz"
-  sslDownloadLink = "https://www.openssl.org/source/" & sslArchiveFile
-  sslInstallDir = (thisDir() / "openssl/") & sslVersion
+  sslDownloadLink = "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/" & sslArchiveFile
+  sslInstallDir = (thisDir() / "libressl/") & sslVersion
   sslSeedConfigOsCompiler = "linux-x86_64"
-  sslConfigureCmd = ["./Configure", sslSeedConfigOsCompiler, "no-shared", "no-zlib", "-fPIC", "--prefix=" & sslInstallDir]
+  sslConfigureCmd = ["./configure", "--disable-shared", "--prefix=" & sslInstallDir]
   sslLibDir = sslInstallDir / "lib"
   sslLibFile = sslLibDir / "libssl.a"
   cryptoLibFile = sslLibDir / "libcrypto.a"
   sslIncludeDir = sslInstallDir / "include/openssl"
+  # # openssl
+  # sslVersion = getEnv("SSLVER", "1.1.1")
+  # sslSourceDir = "openssl-" & sslVersion
+  # sslArchiveFile = sslSourceDir & ".tar.gz"
+  # sslDownloadLink = "https://www.openssl.org/source/" & sslArchiveFile
+  # sslInstallDir = (thisDir() / "openssl/") & sslVersion
+  # sslSeedConfigOsCompiler = "linux-x86_64"
+  # sslConfigureCmd = ["./Configure", sslSeedConfigOsCompiler, "no-shared", "no-zlib", "-fPIC", "--prefix=" & sslInstallDir]
+  # sslLibDir = sslInstallDir / "lib"
+  # sslLibFile = sslLibDir / "libssl.a"
+  # cryptoLibFile = sslLibDir / "libcrypto.a"
+  # sslIncludeDir = sslInstallDir / "include/openssl"
 
 # https://github.com/kaushalmodi/nimy_lisp
 proc dollar[T](s: T): string =
@@ -48,7 +60,7 @@ task installPcre, "Installs PCRE using musl-gcc":
     withDir pcreSourceDir:
       exec(pcreConfigureCmd.mapconcat())
       putEnv("C", "musl-gcc -static")
-      exec("make")
+      exec("make -j8")
       exec("make install")
   else:
     echo pcreLibFile & " already exists"
@@ -66,8 +78,7 @@ task installSsl, "Installs SSL using musl-gcc":
       exec(sslConfigureCmd.mapconcat())
       putEnv("CC", "musl-gcc -static")
       putEnv("C_INCLUDE_PATH", sslIncludeDir)
-      exec("make depend")
-      exec("make")
+      exec("make -j8")
       exec("make install")
   else:
     echo sslLibFile & " already exists"
