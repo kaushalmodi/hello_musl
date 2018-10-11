@@ -2,6 +2,7 @@ from macros import error
 from ospaths import splitFile, `/`
 
 const
+  doOptimize = true
   # pcre
   pcreVersion = getEnv("PCREVER", "8.42")
   pcreSourceDir = "pcre-" & pcreVersion
@@ -13,30 +14,34 @@ const
   pcreIncludeDir = pcreInstallDir / "include"
   pcreLibDir = pcreInstallDir / "lib"
   pcreLibFile = pcreLibDir / "libpcre.a"
+  # openssl
+  openSslSeedConfigOsCompiler = "linux-x86_64"
+  openSslVersion = getEnv("OPENSSLVER", "1.1.1")
+  openSslSourceDir = "openssl-" & openSslVersion
+  openSslArchiveFile = openSslSourceDir & ".tar.gz"
+  openSslDownloadLink = "https://www.openssl.org/source/" & openSslArchiveFile
+  openSslInstallDir = (thisDir() / "openssl/") & openSslVersion
+  # "no-async" is needed for openssl to compile using musl
+  #   - https://gitter.im/nim-lang/Nim?at=5bbf75c3ae7be940163cc198
+  #   - https://www.openwall.com/lists/musl/2016/02/04/5
+  # -DOPENSSL_NO_SECURE_MEMORY is needed to make openssl compile using musl.
+  #   - https://github.com/openssl/openssl/issues/7207#issuecomment-420814524
+  openSslConfigureCmd = ["./Configure", openSslSeedConfigOsCompiler, "no-shared", "no-zlib", "no-async", "-fPIC", "-DOPENSSL_NO_SECURE_MEMORY", "--prefix=" & openSslInstallDir]
+  openSslLibDir = openSslInstallDir / "lib"
+  openSslLibFile = openSslLibDir / "libssl.a"
+  openCryptoLibFile = openSslLibDir / "libcrypto.a"
+  openSslIncludeDir = openSslInstallDir / "include/openssl"
   # libressl
-  sslVersion = getEnv("LIBRESSLVER", "2.8.1")
-  sslSourceDir = "libressl-" & sslVersion
-  sslArchiveFile = sslSourceDir & ".tar.gz"
-  sslDownloadLink = "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/" & sslArchiveFile
-  sslInstallDir = (thisDir() / "libressl/") & sslVersion
-  sslSeedConfigOsCompiler = "linux-x86_64"
-  sslConfigureCmd = ["./configure", "--disable-shared", "--prefix=" & sslInstallDir]
-  sslLibDir = sslInstallDir / "lib"
-  sslLibFile = sslLibDir / "libssl.a"
-  cryptoLibFile = sslLibDir / "libcrypto.a"
-  sslIncludeDir = sslInstallDir / "include/openssl"
-  # # openssl
-  # sslVersion = getEnv("SSLVER", "1.1.1")
-  # sslSourceDir = "openssl-" & sslVersion
-  # sslArchiveFile = sslSourceDir & ".tar.gz"
-  # sslDownloadLink = "https://www.openssl.org/source/" & sslArchiveFile
-  # sslInstallDir = (thisDir() / "openssl/") & sslVersion
-  # sslSeedConfigOsCompiler = "linux-x86_64"
-  # sslConfigureCmd = ["./Configure", sslSeedConfigOsCompiler, "no-shared", "no-zlib", "-fPIC", "--prefix=" & sslInstallDir]
-  # sslLibDir = sslInstallDir / "lib"
-  # sslLibFile = sslLibDir / "libssl.a"
-  # cryptoLibFile = sslLibDir / "libcrypto.a"
-  # sslIncludeDir = sslInstallDir / "include/openssl"
+  libreSslVersion = getEnv("LIBRESSLVER", "2.8.1")
+  libreSslSourceDir = "libressl-" & libreSslVersion
+  libreSslArchiveFile = libreSslSourceDir & ".tar.gz"
+  libreSslDownloadLink = "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/" & libreSslArchiveFile
+  libreSslInstallDir = (thisDir() / "libressl/") & libreSslVersion
+  libreSslConfigureCmd = ["./configure", "--disable-shared", "--prefix=" & libreSslInstallDir]
+  libreSslLibDir = libreSslInstallDir / "lib"
+  libreSslLibFile = libreSslLibDir / "libssl.a"
+  libreCryptoLibFile = libreSslLibDir / "libcrypto.a"
+  libreSslIncludeDir = libreSslInstallDir / "include/openssl"
 
 # https://github.com/kaushalmodi/nimy_lisp
 proc dollar[T](s: T): string =
@@ -66,22 +71,52 @@ task installPcre, "Installs PCRE using musl-gcc":
     echo pcreLibFile & " already exists"
   setCommand("nop")
 
-task installSsl, "Installs SSL using musl-gcc":
-  if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
-    if not existsDir(sslSourceDir):
-      if not existsFile(sslArchiveFile):
-        exec("curl -LO " & sslDownloadLink)
-      exec("tar xf " & sslArchiveFile)
+task installOpenSsl, "Installs OPENSSL using musl-gcc":
+  if (not existsFile(openSslLibFile)) or (not existsFile(openCryptoLibFile)):
+    if not existsDir(openSslSourceDir):
+      if not existsFile(openSslArchiveFile):
+        exec("curl -LO " & openSslDownloadLink)
+      exec("tar xf " & openSslArchiveFile)
     else:
-      echo "OpenSSL lib source dir " & sslSourceDir & " already exists"
-    withDir sslSourceDir:
+      echo "OpenSSL lib source dir " & openSslSourceDir & " already exists"
+    withDir openSslSourceDir:
       putEnv("CC", "musl-gcc -static")
-      exec(sslConfigureCmd.mapconcat())
-      putEnv("C_INCLUDE_PATH", sslIncludeDir)
+      putEnv("C_INCLUDE_PATH", openSslIncludeDir)
+      exec(openSslConfigureCmd.mapconcat())
+      exec("make -j8 depend")
       exec("make -j8")
       exec("make install")
   else:
-    echo sslLibFile & " already exists"
+    echo openSslLibFile & " already exists"
+  setCommand("nop")
+
+task installLibreSsl, "Installs LIBRESSL using musl-gcc":
+  if (not existsFile(libreSslLibFile)) or (not existsFile(libreCryptoLibFile)):
+    if not existsDir(libreSslSourceDir):
+      if not existsFile(libreSslArchiveFile):
+        exec("curl -LO " & libreSslDownloadLink)
+      exec("tar xf " & libreSslArchiveFile)
+    else:
+      echo "LibreSSL lib source dir " & libreSslSourceDir & " already exists"
+    if getEnv("TRAVIS_LIBRESSL_HACK") == "1":
+      # https://gitter.im/nim-lang/Nim?at=5bbf9370bbdc0b250524cf46
+      # Add "#undef SYS__sysctl" to the beginning of <libressl source>/crypto/compat/getentropy_linux.c.
+      let
+        hackedFile = libreSslSourceDir / "crypto/compat/getentropy_linux.c"
+        hackedFileBkp = hackedFile & ".bkp"
+      if existsFile hackedFileBkp:
+        cpFile(hackedFileBkp, hackedFile) # restore from backup
+      else:
+        cpFile(hackedFile, hackedFileBkp) # do a backup
+      exec("sed -i '1s/^/#undef SYS__sysctl /' " & hackedFile)
+    withDir libreSslSourceDir:
+      putEnv("CC", "musl-gcc -static")
+      putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
+      exec(libreSslConfigureCmd.mapconcat())
+      exec("make -j8")
+      exec("make install")
+  else:
+    echo libreSslLibFile & " already exists"
   setCommand("nop")
 
 # -d:musl
@@ -105,14 +140,34 @@ when defined(musl):
     switch("passL", pcreLibFile)
   # -d:ssl
   when defined(ssl):
+    const
+      useOpenSsl = (getEnv("USE_LIBRESSL") == "") or (getEnv("USE_LIBRESSL") == "0") # Uses libreSsl if false
+    var
+      sslLibFile: string
+      cryptoLibFile: string
+      sslIncludeDir: string
+      sslLibDir: string
+    if useOpenSsl:
+      sslLibFile = openSslLibFile
+      cryptoLibFile = openCryptoLibFile
+      sslIncludeDir = openSslIncludeDir
+      sslLibDir = openSslLibDir
+    else:
+      sslLibFile = libreSslLibFile
+      cryptoLibFile = libreCryptoLibFile
+      sslIncludeDir = libreSslIncludeDir
+      sslLibDir = libreSslLibDir
+
     if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
-      selfExec "installSsl"    # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
+      # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
+      if useOpenSsl:
+        selfExec "installOpenSsl"
+      else:
+        selfExec "installLibreSsl"
     switch("passC", "-I" & sslIncludeDir) # So that ssl.h is found when running the musl task
     switch("passL", "-L" & sslLibDir)
     switch("passL", "-lssl")
-    switch("passL", "-lcrypto")
-    # switch("passL", cryptoLibFile)
-    # switch("passL", sslLibFile)
+    switch("passL", "-lcrypto") # This *has* to come *after* -lssl
     switch("dynlibOverride", "libssl")
     switch("dynlibOverride", "libcrypto")
 
@@ -157,7 +212,10 @@ task musl, "Builds an optimized static binary using musl":
       extraSwitches = switches.mapconcat()
       (dirName, baseName, _) = splitFile(f)
       binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-      nimArgsArray = ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
+      nimArgsArray = when doOptimize:
+                       ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
+                     else:
+                       ["c", "-d:musl", extraSwitches, f]
       nimArgs = nimArgsArray.mapconcat()
     # echo "[debug] f = " & f & ", binFile = " & binFile
 
@@ -165,7 +223,8 @@ task musl, "Builds an optimized static binary using musl":
     echo "\nRunning 'nim " & nimArgs & "' .."
     selfExec nimArgs
 
-    # Optimize binary
-    binOptimize(binFile)
+    when doOptimize:
+      # Optimize binary
+      binOptimize(binFile)
 
     echo "\nCreated binary: " & binFile

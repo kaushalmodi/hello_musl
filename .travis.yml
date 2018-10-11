@@ -6,6 +6,8 @@ cache:
     - nim
     - upx
     - pcre
+    - openssl
+    - libressl
 
 env:
   global:
@@ -19,6 +21,10 @@ env:
     - NIMFILE2="src/${PROG2}.nim"
     - BINFILE2="src/${PROG2}"
     #
+    - PROG3="hello_musl_ssl"
+    - NIMFILE3="src/${PROG3}.nim"
+    - BINFILE3="src/${PROG3}"
+    #
     - DIST_DIR="${TRAVIS_BUILD_DIR}/dist"
     - ASSETFILE="${REPONAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
     - NIMREPO="https://github.com/nim-lang/Nim"
@@ -26,14 +32,26 @@ env:
     - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
     - UPXVER="3.95"             # Change this value when upgrading upx
     - PCREVER="8.42"            # Change this value when upgrading pcre
+    - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
+    - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
+    - USE_LIBRESSL=1
+    - TRAVIS_LIBRESSL_HACK=1
 
 addons:
   apt:
     packages:
       # For building MUSL static builds on Linux.
       - musl-tools
+      # To fix "engines/e_afalg.c:24:27: fatal error: linux/version.h: No such file or directory" on Travis
+      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440269504
+      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440268459
+      #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
+      #  - https://github.com/travis-ci/travis-ci/issues/5616
+      #  - https://github.com/pires/netty-tcnative-alpine/issues/5
 
 install:
+  # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
+  - sudo apt install linux-headers-$(uname -r)
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ]; } ||
@@ -88,12 +106,19 @@ script:
   - ldd "${BINFILE2}" || true
   # Run the binary.
   - "${BINFILE2}"
+  # PROG3
+  - nim musl -d:ssl "${NIMFILE3}"
+  # See that the binary is not dynamic.
+  - ldd "${BINFILE3}" || true
+  # Run the binary.
+  - "${BINFILE3}"
 
 before_deploy:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir dist
   - cp "${BINFILE1}" "${DIST_DIR}"
   - cp "${BINFILE2}" "${DIST_DIR}"
+  - cp "${BINFILE3}" "${DIST_DIR}"
   # -C <DIR> tells tar to change the current directory to <DIR>, and
   # then the "." means "add the entire current directory" (including
   # hidden files and sub-directories).
