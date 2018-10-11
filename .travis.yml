@@ -6,7 +6,7 @@ cache:
     - nim
     - upx
     - pcre
-    - libressl
+    - openssl
 
 env:
   global:
@@ -31,7 +31,7 @@ env:
     - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
     - UPXVER="3.95"             # Change this value when upgrading upx
     - PCREVER="8.42"            # Change this value when upgrading pcre
-    - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
+    - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
 
 addons:
   apt:

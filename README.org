@@ -1,12 +1,13 @@
-#+title: Nim + musl + pcre
+#+title: Nim + musl + pcre + ssl
 #+author: Kaushal Modi
 
 [[https://travis-ci.org/kaushalmodi/hello_musl][https://travis-ci.org/kaushalmodi/hello_musl.svg?branch=master]]
 
 This repo contains a generic [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] that adds a Nim
 "sub-command" or task named *musl*. You can simply add that file to
-your Nim project, and run ~nim musl foo.nim~ or ~nim musl -d:pcre
-foo.nim~ (assuming that the below prerequisites are met).
+your Nim project, and run ~nim musl foo.nim~ with optional ~-d:pcre~
+and/or ~-d:ssl~ switches (assuming that the below prerequisites are
+met).
 
 * Prerequisites
 - OS: One of Linux x86 (32/64), ARM (32/64), MIPS (32/64), PowerPC
@@ -24,62 +25,56 @@ will be run automatically one by one, if present.
 2. ~cd hello_musl~
 3. Example of static linking with just musl lib: ~nim musl src/hello_musl.nim~
    - That will generate ~hello_musl~ binary in ~src/~ directory.
-   - ~ldd ./src/hello_musl~ will print "not a dynamic executable".
+   - ~file ./src/hello_musl~ will print:
+     #+begin_example
+     src/hello_musl: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+     #+end_example
    - ~./src/hello_musl~ will print:
      #+begin_example
      Hello, World!
      #+end_example
 4. Example of static linking with musl+pcre libs: ~nim musl -d:pcre src/hello_musl_pcre.nim~
    - That will generate ~hello_musl_pcre~ binary in ~src/~ directory.
-   - ~ldd ./src/hello_musl_pcre~ will print "not a dynamic executable".
+   - ~file ./src/hello_musl_pcre~ will print:
+     #+begin_example
+     src/hello_musl_pcre: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+     #+end_example
    - ~./src/hello_musl_pcre~ will print:
      #+begin_example
      Hello, World!
      Bye, World!
      #+end_example
-*** Sample Travis CI log
-[[https://travis-ci.org/kaushalmodi/hello_musl/builds][All Travis CI logs]]
-#+begin_example
-$ nim musl src/hello_musl.nim
-Hint:used config file '/home/travis/.choosenim/toolchains/nim-#devel/config/nim.cfg' [Conf]
-Hint:used config file '/home/travis/build/kaushalmodi/hello_musl/config.nims' [Conf]
-Running 'nim c -d:musl -d:release src/hello_musl.nim' ..
-Hint:used config file '/home/travis/.choosenim/toolchains/nim-#devel/config/nim.cfg' [Conf]
-Hint:used config file '/home/travis/build/kaushalmodi/hello_musl/config.nims' [Conf]
-  [-d:musl] Building a static binary using musl ..
-Hint:system [Processing]
-Hint:hello_musl [Processing]
-CC: stdlib_system
-CC: hello_musl_hello_musl
-Hint: [Link]
-Hint:operation successful (27180 lines compiled; 1.100 sec total; 38.77MiB peakmem; Release Build) [SuccessX]
-Running 'strip -s' ..
-Running 'upx --best' ..
-                       Ultimate Packer for eXecutables
-                          Copyright (C) 1996 - 2018
-UPX 3.95        Markus Oberhumer, Laszlo Molnar & John Reiser   Aug 26th 2018
-        File size         Ratio      Format      Name
-   --------------------   ------   -----------   -----------
-     30120 ->     16200   53.78%   linux/amd64   hello_musl
-Packed 1 file.
-Created binary: src/hello_musl
-The command "nim musl src/hello_musl.nim" exited with 0.
+5. Example of static linking with musl+ssl libs: ~nim musl -d:ssl src/hello_musl_ssl.nim~
+   - That will generate ~hello_musl_ssl~ binary in ~src/~ directory.
+   - ~file ./src/hello_musl_ssl~ will print:
+     #+begin_example
+     src/hello_musl_ssl: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, stripped
+     #+end_example
+   - ~./src/hello_musl_ssl~ will print:
+     #+begin_example
+     {"name":"Kaushal Modi","type":"card","url":"https://scripter.co/"}
+     {
+       "name": "Kaushal Modi",
+       "type": "card",
+       "url": "https://scripter.co/"
+     }
+     "Kaushal Modi"
+     #+end_example
 
-$ ldd ./src/hello_musl || true
-	not a dynamic executable
-The command "ldd ./src/hello_musl || true" exited with 0.
 
-$ ./src/hello_musl
-Hello, World!
-The command "./src/hello_musl" exited with 0.
-Done. Your build exited with 0.
-#+end_example
+- Note :: When building with ~-d:ssl~, a statically linked version of
+          OpenSSL library is *first* built with
+          ~-DOPENSSL_NO_SECURE_MEMORY~ Configure option, because of an
+          [[https://github.com/openssl/openssl/issues/7207#issuecomment-420814524][issue with it getting built using MUSL]]. Do not use that
+          ~-d:ssl~ switch if you do not want to enable that insecure
+          option.
 ** For your Nim project
 - Copy the [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] to your Nim project.
 - While being the same directory as ~config.nims~, do:
   #+begin_example
   nim musl <path/to/your/nim/file>         # without static pcre lib linking
   nim musl -d:pcre <path/to/your/nim/file> # *with* static pcre lib linking
+  nim musl -d:ssl <path/to/your/nim/file>  # *with* static openssl lib linking
   #+end_example
 * References
 - [[https://github.com/nim-lang/Nim/wiki/Using-nimscript-for-configuration]]
