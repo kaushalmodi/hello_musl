@@ -58,6 +58,7 @@ install:
   - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
   - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
   - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
+  - apt-file search linux/if_alg.h
   - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/if_alg.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
