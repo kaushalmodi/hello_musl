@@ -58,8 +58,8 @@ task installPcre, "Installs PCRE using musl-gcc":
     else:
       echo "PCRE lib source dir " & pcreSourceDir & " already exists"
     withDir pcreSourceDir:
-      exec(pcreConfigureCmd.mapconcat())
       putEnv("C", "musl-gcc -static")
+      exec(pcreConfigureCmd.mapconcat())
       exec("make -j8")
       exec("make install")
   else:
@@ -75,8 +75,8 @@ task installSsl, "Installs SSL using musl-gcc":
     else:
       echo "OpenSSL lib source dir " & sslSourceDir & " already exists"
     withDir sslSourceDir:
-      exec(sslConfigureCmd.mapconcat())
       putEnv("CC", "musl-gcc -static")
+      exec(sslConfigureCmd.mapconcat())
       putEnv("C_INCLUDE_PATH", sslIncludeDir)
       exec("make -j8")
       exec("make install")
