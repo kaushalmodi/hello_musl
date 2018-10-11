@@ -10,9 +10,21 @@ const
   pcreInstallDir = (thisDir() / "pcre/") & pcreVersion
   # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
   pcreConfigureCmd = ["./configure", "--prefix=" & pcreInstallDir, "--enable-pcre16", "--enable-pcre32", "--disable-shared"]
-  pcreLibDir = pcreInstallDir / "lib"
   pcreIncludeDir = pcreInstallDir / "include"
+  pcreLibDir = pcreInstallDir / "lib"
   pcreLibFile = pcreLibDir / "libpcre.a"
+  # ssl
+  sslVersion = getEnv("SSLVER", "1.1.1")
+  sslSourceDir = "openssl-" & sslVersion
+  sslArchiveFile = sslSourceDir & ".tar.gz"
+  sslDownloadLink = "https://www.openssl.org/source/" & sslArchiveFile
+  sslInstallDir = (thisDir() / "openssl/") & sslVersion
+  sslSeedConfigOsCompiler = "linux-x86_64"
+  sslConfigureCmd = ["./Configure", sslSeedConfigOsCompiler, "no-shared", "no-zlib", "-fPIC", "--prefix=" & sslInstallDir]
+  sslLibDir = sslInstallDir / "lib"
+  sslLibFile = sslLibDir / "libssl.a"
+  cryptoLibFile = sslLibDir / "libcrypto.a"
+  sslIncludeDir = sslInstallDir / "include/openssl"
 
 # https://github.com/kaushalmodi/nimy_lisp
 proc dollar[T](s: T): string =
@@ -42,6 +54,25 @@ task installPcre, "Installs PCRE using musl-gcc":
     echo pcreLibFile & " already exists"
   setCommand("nop")
 
+task installSsl, "Installs SSL using musl-gcc":
+  if not existsFile(sslLibFile):
+    if not existsDir(sslSourceDir):
+      if not existsFile(sslArchiveFile):
+        exec("curl -LO " & sslDownloadLink)
+      exec("tar xf " & sslArchiveFile)
+    else:
+      echo "OpenSSL lib source dir " & sslSourceDir & " already exists"
+    withDir sslSourceDir:
+      exec(sslConfigureCmd.mapconcat())
+      putEnv("CC", "musl-gcc -static")
+      putEnv("C_INCLUDE_PATH", sslIncludeDir)
+      exec("make depend")
+      exec("make")
+      exec("make install")
+  else:
+    echo sslLibFile & " already exists"
+  setCommand("nop")
+
 # -d:musl
 when defined(musl):
   var
@@ -61,6 +92,18 @@ when defined(musl):
     switch("passC", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
+  # -d:ssl
+  when defined(ssl):
+    if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
+      selfExec "installSsl"    # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
+    switch("passC", "-I" & sslIncludeDir) # So that ssl.h is found when running the musl task
+    switch("passL", "-L" & sslLibDir)
+    switch("passL", "-lcrypto")
+    switch("passL", "-lssl")
+    # switch("passL", cryptoLibFile)
+    # switch("passL", sslLibFile)
+    switch("dynlibOverride", "libcrypto")
+    switch("dynlibOverride", "libssl")
 
 proc binOptimize(binFile: string) =
   ## Optimize size of the ``binFile`` binary.
