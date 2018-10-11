@@ -5,5 +5,7 @@ pcre-*
 pcre/
 openssl-*
 openssl/
+libressl-*
+libressl/
 /src/hello_musl_pcre
 /src/hello_musl_ssl
