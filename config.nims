@@ -98,6 +98,17 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
       exec("tar xf " & libreSslArchiveFile)
     else:
       echo "LibreSSL lib source dir " & libreSslSourceDir & " already exists"
+    if getEnv("TRAVIS_LIBRESSL_HACK") == "1":
+      # https://gitter.im/nim-lang/Nim?at=5bbf9370bbdc0b250524cf46
+      # Add "#undef SYS__sysctl" to the beginning of <libressl source>/crypto/compat/getentropy_linux.c.
+      let
+        hackedFile = libreSslSourceDir / "crypto/compat/getentropy_linux.c"
+        hackedFileBkp = hackedFile & ".bkp"
+      if existsFile hackedFileBkp:
+        cpFile(hackedFileBkp, hackedFile) # restore from backup
+      else:
+        cpFile(hackedFile, hackedFileBkp) # do a backup
+      exec("sed -i '1s/^/#undef SYS__sysctl /' " & hackedFile)
     withDir libreSslSourceDir:
       putEnv("CC", "musl-gcc -static")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
