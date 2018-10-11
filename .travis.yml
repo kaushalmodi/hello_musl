@@ -34,7 +34,7 @@ env:
     - PCREVER="8.42"            # Change this value when upgrading pcre
     - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
-    - USE_LIBRESSL=1
+    - USE_LIBRESSL=0
     - TRAVIS_LIBRESSL_HACK=1
 
 addons:
