@@ -2,6 +2,7 @@ from macros import error
 from ospaths import splitFile, `/`
 
 const
+  doOptimize = true
   # pcre
   pcreVersion = getEnv("PCREVER", "8.42")
   pcreSourceDir = "pcre-" & pcreVersion
@@ -200,7 +201,10 @@ task musl, "Builds an optimized static binary using musl":
       extraSwitches = switches.mapconcat()
       (dirName, baseName, _) = splitFile(f)
       binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-      nimArgsArray = ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
+      nimArgsArray = when doOptimize:
+                       ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
+                     else:
+                       ["c", "-d:musl", extraSwitches, f]
       nimArgs = nimArgsArray.mapconcat()
     # echo "[debug] f = " & f & ", binFile = " & binFile
 
@@ -208,7 +212,8 @@ task musl, "Builds an optimized static binary using musl":
     echo "\nRunning 'nim " & nimArgs & "' .."
     selfExec nimArgs
 
-    # Optimize binary
-    binOptimize(binFile)
+    when doOptimize:
+      # Optimize binary
+      binOptimize(binFile)
 
     echo "\nCreated binary: " & binFile
