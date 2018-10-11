@@ -97,19 +97,19 @@ script:
   # PROG1
   - nim musl "${NIMFILE1}"
   # See that the binary is not dynamic.
-  - ldd "${BINFILE1}" || true
+  - file "${BINFILE1}" || true
   # Run the binary.
   - "${BINFILE1}"
   # PROG2
   - nim musl -d:pcre "${NIMFILE2}"
   # See that the binary is not dynamic.
-  - ldd "${BINFILE2}" || true
+  - file "${BINFILE2}" || true
   # Run the binary.
   - "${BINFILE2}"
   # PROG3
   - nim musl -d:ssl "${NIMFILE3}"
   # See that the binary is not dynamic.
-  - ldd "${BINFILE3}" || true
+  - file "${BINFILE3}" || true
   # Run the binary.
   - "${BINFILE3}"
 
