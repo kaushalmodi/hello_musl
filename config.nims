@@ -106,9 +106,7 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
         hackedFileBkp = hackedFile & ".bkp"
       if existsFile hackedFileBkp:
         cpFile(hackedFileBkp, hackedFile) # restore from backup
-      else:
-        cpFile(hackedFile, hackedFileBkp) # do a backup
-      exec("sed -i '1s/^/#undef SYS__sysctl /' " & hackedFile)
+      exec("sed -i.bkp '1s/^/#undef SYS__sysctl /' " & hackedFile)
     withDir libreSslSourceDir:
       putEnv("CC", "musl-gcc -static")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
