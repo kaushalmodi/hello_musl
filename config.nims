@@ -20,8 +20,11 @@ const
   openSslArchiveFile = openSslSourceDir & ".tar.gz"
   openSslDownloadLink = "https://www.openssl.org/source/" & openSslArchiveFile
   openSslInstallDir = (thisDir() / "openssl/") & openSslVersion
-  # https://github.com/openssl/openssl/issues/7207#issuecomment-420814524
+  # "no-async" is needed for openssl to compile using musl
+  #   - https://gitter.im/nim-lang/Nim?at=5bbf75c3ae7be940163cc198
+  #   - https://www.openwall.com/lists/musl/2016/02/04/5
   # -DOPENSSL_NO_SECURE_MEMORY is needed to make openssl compile using musl.
+  #   - https://github.com/openssl/openssl/issues/7207#issuecomment-420814524
   openSslConfigureCmd = ["./Configure", openSslSeedConfigOsCompiler, "no-shared", "no-zlib", "no-async", "-fPIC", "-DOPENSSL_NO_SECURE_MEMORY", "--prefix=" & openSslInstallDir]
   openSslLibDir = openSslInstallDir / "lib"
   openSslLibFile = openSslLibDir / "libssl.a"
