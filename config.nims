@@ -109,12 +109,12 @@ when defined(musl):
       selfExec "installSsl"    # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
     switch("passC", "-I" & sslIncludeDir) # So that ssl.h is found when running the musl task
     switch("passL", "-L" & sslLibDir)
-    switch("passL", "-lcrypto")
     switch("passL", "-lssl")
+    switch("passL", "-lcrypto")
     # switch("passL", cryptoLibFile)
     # switch("passL", sslLibFile)
-    switch("dynlibOverride", "libcrypto")
     switch("dynlibOverride", "libssl")
+    switch("dynlibOverride", "libcrypto")
 
 proc binOptimize(binFile: string) =
   ## Optimize size of the ``binFile`` binary.
