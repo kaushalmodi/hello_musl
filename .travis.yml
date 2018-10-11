@@ -48,9 +48,10 @@ addons:
       #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
       #  - https://github.com/travis-ci/travis-ci/issues/5616
       #  - https://github.com/pires/netty-tcnative-alpine/issues/5
-      - linux-headers-4.4.0-98-generic
 
 install:
+  # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
+  - sudo apt install linux-headers-$(uname -r)
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ]; } ||
