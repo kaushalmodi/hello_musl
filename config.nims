@@ -55,7 +55,7 @@ task installPcre, "Installs PCRE using musl-gcc":
   setCommand("nop")
 
 task installSsl, "Installs SSL using musl-gcc":
-  if not existsFile(sslLibFile):
+  if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
     if not existsDir(sslSourceDir):
       if not existsFile(sslArchiveFile):
         exec("curl -LO " & sslDownloadLink)
