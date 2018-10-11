@@ -34,7 +34,7 @@ env:
     - PCREVER="8.42"            # Change this value when upgrading pcre
     - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
-    - USE_LIBRESSL=1
+    - USE_LIBRESSL=0
     - TRAVIS_LIBRESSL_HACK=1
 
 addons:
@@ -48,6 +48,7 @@ addons:
       #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
       #  - https://github.com/travis-ci/travis-ci/issues/5616
       #  - https://github.com/pires/netty-tcnative-alpine/issues/5
+      - linux-libc-dev
 
 install:
   # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
