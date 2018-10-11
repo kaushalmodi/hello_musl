@@ -36,6 +36,8 @@ env:
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
     - USE_LIBRESSL=0
     - TRAVIS_LIBRESSL_HACK=1
+    - TRAVIS_EXTRA_INCLUDE_DIR="missing_include"
+    - TRAVIS_EXTRA_INCLUDE_PATH="${TRAVIS_BUILD_DIR}/${TRAVIS_EXTRA_INCLUDE_DIR}"
 
 addons:
   apt:
@@ -48,11 +50,16 @@ addons:
       #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
       #  - https://github.com/travis-ci/travis-ci/issues/5616
       #  - https://github.com/pires/netty-tcnative-alpine/issues/5
-      - linux-libc-dev
 
 install:
   # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
   - sudo apt install linux-headers-$(uname -r)
+  # - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
+  # - echo "header files in linux-headers"
+  # - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
+  - find /usr/include -name "*.h" -print
+  - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
+  - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ]; } ||

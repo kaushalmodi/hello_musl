@@ -80,8 +80,13 @@ task installOpenSsl, "Installs OPENSSL using musl-gcc":
     else:
       echo "OpenSSL lib source dir " & openSslSourceDir & " already exists"
     withDir openSslSourceDir:
-      putEnv("CC", "musl-gcc -static")
-      putEnv("C_INCLUDE_PATH", openSslIncludeDir)
+      # https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html
+      #  -idirafter /usr/include # Needed for Travis build to pass
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include")
+      if getEnv("TRAVIS_EXTRA_INCLUDE_PATH") != "":
+        putEnv("C_INCLUDE_PATH", getEnv("TRAVIS_EXTRA_INCLUDE_PATH") & ":" & openSslIncludeDir)
+      else:
+        putEnv("C_INCLUDE_PATH", openSslIncludeDir)
       exec(openSslConfigureCmd.mapconcat())
       exec("make -j8 depend")
       exec("make -j8")
