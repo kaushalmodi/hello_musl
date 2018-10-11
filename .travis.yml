@@ -39,8 +39,11 @@ addons:
       # For building MUSL static builds on Linux.
       - musl-tools
       # To fix "engines/e_afalg.c:24:27: fatal error: linux/version.h: No such file or directory" on Travis
-      #  - https://gitter.im/nim-lang/Nim?at=5bbf8b6a271506518df59035
-      - linux-libc-dev
+      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440269504
+      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440268459
+      #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
+      #  - https://github.com/travis-ci/travis-ci/issues/5616
+      - linux-headers-4.4.0-98-generic
 
 install:
   - echo "NIMDIR = ${NIMDIR}"
