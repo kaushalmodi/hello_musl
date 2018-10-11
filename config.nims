@@ -129,14 +129,13 @@ when defined(musl):
   # -d:ssl
   when defined(ssl):
     const
-      openSsl = true
-      # openSsl = false           # libreSsl
+      useOpenSsl = (getEnv("USE_LIBRESSL") == "") or (getEnv("USE_LIBRESSL") == "0") # Uses libreSsl if false
     var
       sslLibFile: string
       cryptoLibFile: string
       sslIncludeDir: string
       sslLibDir: string
-    if openSsl:
+    if useOpenSsl:
       sslLibFile = openSslLibFile
       cryptoLibFile = openCryptoLibFile
       sslIncludeDir = openSslIncludeDir
@@ -149,7 +148,7 @@ when defined(musl):
 
     if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
       # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
-      if openSsl:
+      if useOpenSsl:
         selfExec "installOpenSsl"
       else:
         selfExec "installLibreSsl"
