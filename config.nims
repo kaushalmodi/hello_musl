@@ -51,6 +51,7 @@ when defined(musl):
   echo "debug: " & muslGccPath
   if muslGccPath == "":
     error("'musl-gcc' binary was not found in PATH.")
+  switch("passL", "-static")
   switch("gcc.exe", muslGccPath)
   switch("gcc.linkerexe", muslGccPath)
   # -d:pcre
@@ -60,7 +61,6 @@ when defined(musl):
     switch("passC", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
-  switch("passL", "-static")
 
 proc binOptimize(binFile: string) =
   ## Optimize size of the ``binFile`` binary.
@@ -77,30 +77,41 @@ proc binOptimize(binFile: string) =
 task musl, "Builds an optimized static binary using musl":
   ## Usage: nim musl [-d:pcre] <.nim file path>
   var
-    extraDefines = " "
+    switches: seq[string]
+    nimFiles: seq[string]
   let
     numParams = paramCount()
-  if numParams >= 4:
-    error("The 'musl' sub-command accepts at most 2 arguments (but " &
-      $(numParams-1) & " were detected)." &
+
+  # param 0 will always be "nim"
+  # param 1 will always be "musl"
+  for i in 2 .. numParams:
+    if paramStr(i)[0] == '-':    # -d:foo or --define:foo
+      switches.add(paramStr(i))
+    else:
+      # Non-switch parameters are assumed to be Nim file names.
+      nimFiles.add(paramStr(i))
+
+  if nimFiles.len == 0:
+    error("The 'musl' sub-command accepts at least one Nim file name" &
       "\n  Usage Examples: nim musl FILE.nim" &
-      "\n                  nim musl -d:pcre FILE.nim")
+      "\n                  nim musl FILE1.nim FILE2.nim" &
+      "\n                  nim musl -d:pcre FILE.nim" &
+      "\n                  nim musl -d:pcre -d:ssl FILE.nim")
 
-  when defined(pcre):
-    extraDefines.add("-d:pcre")
+  for f in nimFiles:
+    let
+      extraSwitches = switches.mapconcat()
+      (dirName, baseName, _) = splitFile(f)
+      binFile = dirName / baseName  # Save the binary in the same dir as the nim file
+      nimArgsArray = ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
+      nimArgs = nimArgsArray.mapconcat()
+    # echo "[debug] f = " & f & ", binFile = " & binFile
 
-  let
-    nimFile = paramStr(numParams) ## The nim file name *must* be the last.
-    (dirName, baseName, _) = splitFile(nimFile)
-    binFile = dirName / baseName  # Save the binary in the same dir as the nim file
-    nimArgs = "c -d:musl -d:release --opt:size" & extraDefines & " " & nimFile
-  # echo "[debug] nimFile = " & nimFile & ", binFile = " & binFile
+    # Build binary
+    echo "\nRunning 'nim " & nimArgs & "' .."
+    selfExec nimArgs
 
-  # Build binary
-  echo "\nRunning 'nim " & nimArgs & "' .."
-  selfExec nimArgs
+    # Optimize binary
+    binOptimize(binFile)
 
-  # Optimize binary
-  binOptimize(binFile)
-
-  echo "\nCreated binary: " & binFile
+    echo "\nCreated binary: " & binFile
