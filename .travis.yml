@@ -50,11 +50,11 @@ addons:
       #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
       #  - https://github.com/travis-ci/travis-ci/issues/5616
       #  - https://github.com/pires/netty-tcnative-alpine/issues/5
-      - linux-libc-dev
 
 install:
   # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
   - sudo apt install linux-headers-$(uname -r)
+  - sudo apt install linux-libc-dev
   - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
   - echo "header files in linux-headers"
   - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
