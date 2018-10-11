@@ -2,14 +2,26 @@ from macros import error
 from ospaths import splitFile, `/`
 
 const
+  # pcre
   pcreVersion = getEnv("PCREVER", "8.42")
   pcreSourceDir = "pcre-" & pcreVersion
   pcreArchiveFile = pcreSourceDir & ".tar.bz2"
   pcreDownloadLink = "https://downloads.sourceforge.net/pcre/" & pcreArchiveFile
   pcreInstallDir = (thisDir() / "pcre/") & pcreVersion
+  # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
+  pcreConfigureCmd = ["./configure", "--prefix=" & pcreInstallDir, "--enable-pcre16", "--enable-pcre32", "--disable-shared"]
   pcreLibDir = pcreInstallDir / "lib"
   pcreIncludeDir = pcreInstallDir / "include"
   pcreLibFile = pcreLibDir / "libpcre.a"
+
+# https://github.com/kaushalmodi/nimy_lisp
+proc dollar[T](s: T): string =
+  result = $s
+proc mapconcat[T](s: openArray[T]; op: proc(x: T): string = dollar; sep = " "): string =
+  ## Concatenate elements of ``s`` after applying ``op`` to each element.
+  ## Separate each element using ``sep``.
+  for x in s:
+    result.add op(x) & sep
 
 task installPcre, "Installs PCRE using musl-gcc":
   if not existsFile(pcreLibFile):
@@ -20,13 +32,8 @@ task installPcre, "Installs PCRE using musl-gcc":
     else:
       echo "PCRE lib source dir " & pcreSourceDir & " already exists"
     withDir pcreSourceDir:
+      exec(pcreConfigureCmd.mapconcat())
       putEnv("C", "musl-gcc -static")
-      # http://www.linuxfromscratch.org/blfs/view/8.1/general/pcre.html
-      exec("./configure " &
-        "--prefix=" & pcreInstallDir & " " &
-        "--enable-pcre16 " &
-        "--enable-pcre32 " &
-        "--disable-shared")
       exec("make")
       exec("make install")
   else:
