@@ -34,7 +34,7 @@ env:
     - PCREVER="8.42"            # Change this value when upgrading pcre
     - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
-    - USE_LIBRESSL=0            # Ensure that libressl is not used on Travis; doesn't compile there.
+    - USE_LIBRESSL=1
 
 addons:
   apt:
