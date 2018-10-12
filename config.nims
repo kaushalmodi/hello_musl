@@ -107,8 +107,10 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
       putEnv("CC", "musl-gcc -static -idirafter /usr/include/ -idirafter /usr/include/x86_64-linux-gnu/")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
       exec(libreSslConfigureCmd.mapconcat())
-      exec("make -j8")
-      exec("make install")
+      exec("make -j8 -C crypto") # build just the "crypto" component
+      exec("make -j8 -C ssl")    # build just the "ssl" component
+      exec("make -C crypto install")
+      exec("make -C ssl install")
   else:
     echo libreSslLibFile & " already exists"
   setCommand("nop")
