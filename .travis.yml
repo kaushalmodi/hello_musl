@@ -57,6 +57,7 @@ install:
   # - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
   # - echo "header files in linux-headers"
   # - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
+  - find /usr/include -name "*.h" -print
   - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
   - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
   - echo "NIMDIR = ${NIMDIR}"
