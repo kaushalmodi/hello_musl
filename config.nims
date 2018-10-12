@@ -3,6 +3,8 @@ from ospaths import splitFile, `/`
 
 const
   doOptimize = true
+
+let
   # pcre
   pcreVersion = getEnv("PCREVER", "8.42")
   pcreSourceDir = "pcre-" & pcreVersion
