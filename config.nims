@@ -82,7 +82,7 @@ task installOpenSsl, "Installs OPENSSL using musl-gcc":
     withDir openSslSourceDir:
       # https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html
       #  -idirafter /usr/include # Needed for Travis build to pass
-      putEnv("CC", "musl-gcc -static -idirafter /usr/include")
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include/ -idirafter /usr/include/x86_64-linux-gnu/")
       if getEnv("TRAVIS_EXTRA_INCLUDE_PATH") != "":
         putEnv("C_INCLUDE_PATH", getEnv("TRAVIS_EXTRA_INCLUDE_PATH") & ":" & openSslIncludeDir)
       else:
