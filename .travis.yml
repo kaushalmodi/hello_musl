@@ -54,12 +54,9 @@ addons:
 install:
   # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
   - sudo apt install linux-headers-$(uname -r)
-  - sudo apt install linux-libc-dev
-  - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
-  - echo "header files in linux-headers"
-  - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
-  - echo "header files in linux-libc-dev"
-  - find /usr/src/linux-libc-dev/include -name "*.h" -print
+  # - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
+  # - echo "header files in linux-headers"
+  # - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
   - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
   - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
   - echo "NIMDIR = ${NIMDIR}"
