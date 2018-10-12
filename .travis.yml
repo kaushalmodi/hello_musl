@@ -34,32 +34,16 @@ env:
     - PCREVER="8.42"            # Change this value when upgrading pcre
     - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
-    - USE_LIBRESSL=0
-    - TRAVIS_LIBRESSL_HACK=1
-    - TRAVIS_EXTRA_INCLUDE_DIR="missing_include"
-    - TRAVIS_EXTRA_INCLUDE_PATH="${TRAVIS_BUILD_DIR}/${TRAVIS_EXTRA_INCLUDE_DIR}"
+    - USE_LIBRESSL=0            # Ensure that libressl is not used on Travis; doesn't compile there.
 
 addons:
   apt:
     packages:
       # For building MUSL static builds on Linux.
       - musl-tools
-      # To fix "engines/e_afalg.c:24:27: fatal error: linux/version.h: No such file or directory" on Travis
-      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440269504
-      #  - https://travis-ci.org/kaushalmodi/hello_musl/builds/440268459
-      #  - https://github.com/mirage/mirage-block-unix/issues/45#issuecomment-196892988
-      #  - https://github.com/travis-ci/travis-ci/issues/5616
-      #  - https://github.com/pires/netty-tcnative-alpine/issues/5
 
 install:
-  # https://www.tecmint.com/install-kernel-headers-in-ubuntu-and-debian/
-  - sudo apt install linux-headers-$(uname -r)
-  # - ls -latr /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/
-  # - echo "header files in linux-headers"
-  # - find /usr/src/linux-headers-$(uname -r)/include -name "*.h" -print
-  - find /usr/include -name "*.h" -print
-  - mkdir -p "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux
-  - ln -s /usr/src/linux-headers-$(uname -r)/include/generated/uapi/linux/version.h "${TRAVIS_EXTRA_INCLUDE_DIR}"/linux/.
+  # - find /usr/include -name "*.h" -print
   - echo "NIMDIR = ${NIMDIR}"
   # After building nim, wipe csources to save on cache space.
   - "{ [ -f ${NIMDIR}/bin/nim ]; } ||

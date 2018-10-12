@@ -81,12 +81,10 @@ task installOpenSsl, "Installs OPENSSL using musl-gcc":
       echo "OpenSSL lib source dir " & openSslSourceDir & " already exists"
     withDir openSslSourceDir:
       # https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html
-      #  -idirafter /usr/include # Needed for Travis build to pass
+      #  -idirafter /usr/include/ # Needed for Travis/Ubuntu build to pass, for linux/version.h, etc.
+      #  -idirafter /usr/include/x86_64-linux-gnu/ # Needed for Travis/Ubuntu build to pass, for asm/types.h
       putEnv("CC", "musl-gcc -static -idirafter /usr/include/ -idirafter /usr/include/x86_64-linux-gnu/")
-      if getEnv("TRAVIS_EXTRA_INCLUDE_PATH") != "":
-        putEnv("C_INCLUDE_PATH", getEnv("TRAVIS_EXTRA_INCLUDE_PATH") & ":" & openSslIncludeDir)
-      else:
-        putEnv("C_INCLUDE_PATH", openSslIncludeDir)
+      putEnv("C_INCLUDE_PATH", openSslIncludeDir)
       exec(openSslConfigureCmd.mapconcat())
       exec("make -j8 depend")
       exec("make -j8")
@@ -103,15 +101,6 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
       exec("tar xf " & libreSslArchiveFile)
     else:
       echo "LibreSSL lib source dir " & libreSslSourceDir & " already exists"
-    if getEnv("TRAVIS_LIBRESSL_HACK") == "1":
-      # https://gitter.im/nim-lang/Nim?at=5bbf9370bbdc0b250524cf46
-      # Add "#undef SYS__sysctl" to the beginning of <libressl source>/crypto/compat/getentropy_linux.c.
-      let
-        hackedFile = libreSslSourceDir / "crypto/compat/getentropy_linux.c"
-        hackedFileBkp = hackedFile & ".bkp"
-      if existsFile hackedFileBkp:
-        cpFile(hackedFileBkp, hackedFile) # restore from backup
-      exec("sed -i.bkp '1s/^/#undef SYS__sysctl /' " & hackedFile)
     withDir libreSslSourceDir:
       putEnv("CC", "musl-gcc -static")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
