@@ -179,7 +179,7 @@ proc binOptimize(binFile: string) =
 
 # nim musl foo.nim
 task musl, "Builds an optimized static binary using musl":
-  ## Usage: nim musl [-d:pcre] <.nim file path>
+  ## Usage: nim musl [-d:pcre] [-d:libressl|-d:openssl] <FILE1> <FILE2> ..
   var
     switches: seq[string]
     nimFiles: seq[string]
