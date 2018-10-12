@@ -76,12 +76,11 @@ That will generate ~hello_musl_ssl~ binary in ~src/~ directory.
   "Kaushal Modi"
   #+end_example
 
-- Note :: The built binary crashes on RHEL 6.8 (but as can be seen from
-          Travis build logs, it works there). So the LibreSSL built
-          binaries should work on most of the newer 64-bit GNU/Linux
-          systems. RHEL 6.8 user may look at the slightly less secure
-          option of building the static binary with ~-d:openssl~
-          switch.
+- Note :: Binary built using ~-d:libressl~ on RHEL 6.8 is known to
+          crash with just a "Killed" message. But the same, when built
+          on Travis, run fine on RHEL 6.8 (mystery). So a RHEL 6.8
+          user may look at the slightly less secure option of building
+          using with ~-d:openssl~ switch instead.
 ** Static linking with ~musl~ + ~openssl~ libs
 #+begin_example
 nim musl -d:openssl src/hello_musl_ssl.nim
