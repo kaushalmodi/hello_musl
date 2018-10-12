@@ -199,12 +199,12 @@ task musl, "Builds an optimized static binary using musl":
       nimFiles.add(paramStr(i))
 
   if nimFiles.len == 0:
-    error("The 'musl' sub-command accepts at least one Nim file name" &
-      "\n  Usage Examples: nim musl FILE.nim" &
-      "\n                  nim musl FILE1.nim FILE2.nim" &
-      "\n                  nim musl -d:pcre FILE.nim" &
-      "\n                  nim musl -d:libressl FILE.nim" &
-      "\n                  nim musl -d:pcre -d:openssl FILE.nim")
+    error(["The 'musl' sub-command accepts at least one Nim file name",
+           "  Examples: nim musl FILE.nim",
+           "            nim musl FILE1.nim FILE2.nim",
+           "            nim musl -d:pcre FILE.nim",
+           "            nim musl -d:libressl FILE.nim",
+           "            nim musl -d:pcre -d:openssl FILE.nim"].mapconcat("\n"))
 
   for f in nimFiles:
     let
