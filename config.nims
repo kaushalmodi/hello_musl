@@ -14,6 +14,17 @@ const
   pcreIncludeDir = pcreInstallDir / "include"
   pcreLibDir = pcreInstallDir / "lib"
   pcreLibFile = pcreLibDir / "libpcre.a"
+  # libressl
+  libreSslVersion = getEnv("LIBRESSLVER", "2.8.1")
+  libreSslSourceDir = "libressl-" & libreSslVersion
+  libreSslArchiveFile = libreSslSourceDir & ".tar.gz"
+  libreSslDownloadLink = "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/" & libreSslArchiveFile
+  libreSslInstallDir = (thisDir() / "libressl/") & libreSslVersion
+  libreSslConfigureCmd = ["./configure", "--disable-shared", "--prefix=" & libreSslInstallDir]
+  libreSslLibDir = libreSslInstallDir / "lib"
+  libreSslLibFile = libreSslLibDir / "libssl.a"
+  libreCryptoLibFile = libreSslLibDir / "libcrypto.a"
+  libreSslIncludeDir = libreSslInstallDir / "include/openssl"
   # openssl
   openSslSeedConfigOsCompiler = "linux-x86_64"
   openSslVersion = getEnv("OPENSSLVER", "1.1.1")
@@ -31,17 +42,6 @@ const
   openSslLibFile = openSslLibDir / "libssl.a"
   openCryptoLibFile = openSslLibDir / "libcrypto.a"
   openSslIncludeDir = openSslInstallDir / "include/openssl"
-  # libressl
-  libreSslVersion = getEnv("LIBRESSLVER", "2.8.1")
-  libreSslSourceDir = "libressl-" & libreSslVersion
-  libreSslArchiveFile = libreSslSourceDir & ".tar.gz"
-  libreSslDownloadLink = "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/" & libreSslArchiveFile
-  libreSslInstallDir = (thisDir() / "libressl/") & libreSslVersion
-  libreSslConfigureCmd = ["./configure", "--disable-shared", "--prefix=" & libreSslInstallDir]
-  libreSslLibDir = libreSslInstallDir / "lib"
-  libreSslLibFile = libreSslLibDir / "libssl.a"
-  libreCryptoLibFile = libreSslLibDir / "libcrypto.a"
-  libreSslIncludeDir = libreSslInstallDir / "include/openssl"
 
 # https://github.com/kaushalmodi/nimy_lisp
 proc dollar[T](s: T): string =
@@ -71,28 +71,6 @@ task installPcre, "Installs PCRE using musl-gcc":
     echo pcreLibFile & " already exists"
   setCommand("nop")
 
-task installOpenSsl, "Installs OPENSSL using musl-gcc":
-  if (not existsFile(openSslLibFile)) or (not existsFile(openCryptoLibFile)):
-    if not existsDir(openSslSourceDir):
-      if not existsFile(openSslArchiveFile):
-        exec("curl -LO " & openSslDownloadLink)
-      exec("tar xf " & openSslArchiveFile)
-    else:
-      echo "OpenSSL lib source dir " & openSslSourceDir & " already exists"
-    withDir openSslSourceDir:
-      # https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html
-      #  -idirafter /usr/include/ # Needed for Travis/Ubuntu build to pass, for linux/version.h, etc.
-      #  -idirafter /usr/include/x86_64-linux-gnu/ # Needed for Travis/Ubuntu build to pass, for asm/types.h
-      putEnv("CC", "musl-gcc -static -idirafter /usr/include/ -idirafter /usr/include/x86_64-linux-gnu/")
-      putEnv("C_INCLUDE_PATH", openSslIncludeDir)
-      exec(openSslConfigureCmd.mapconcat())
-      exec("make -j8 depend")
-      exec("make -j8")
-      exec("make install_sw")
-  else:
-    echo openSslLibFile & " already exists"
-  setCommand("nop")
-
 task installLibreSsl, "Installs LIBRESSL using musl-gcc":
   if (not existsFile(libreSslLibFile)) or (not existsFile(libreCryptoLibFile)):
     if not existsDir(libreSslSourceDir):
@@ -115,6 +93,29 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
     echo libreSslLibFile & " already exists"
   setCommand("nop")
 
+task installOpenSsl, "Installs OPENSSL using musl-gcc":
+  if (not existsFile(openSslLibFile)) or (not existsFile(openCryptoLibFile)):
+    if not existsDir(openSslSourceDir):
+      if not existsFile(openSslArchiveFile):
+        exec("curl -LO " & openSslDownloadLink)
+      exec("tar xf " & openSslArchiveFile)
+    else:
+      echo "OpenSSL lib source dir " & openSslSourceDir & " already exists"
+    withDir openSslSourceDir:
+      # https://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html
+      #  -idirafter /usr/include/ # Needed for Travis/Ubuntu build to pass, for linux/version.h, etc.
+      #  -idirafter /usr/include/x86_64-linux-gnu/ # Needed for Travis/Ubuntu build to pass, for asm/types.h
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include/ -idirafter /usr/include/x86_64-linux-gnu/")
+      putEnv("C_INCLUDE_PATH", openSslIncludeDir)
+      exec(openSslConfigureCmd.mapconcat())
+      echo "The insecure switch -DOPENSSL_NO_SECURE_MEMORY is needed so that OpenSSL can be compiled using MUSL."
+      exec("make -j8 depend")
+      exec("make -j8")
+      exec("make install_sw")
+  else:
+    echo openSslLibFile & " already exists"
+  setCommand("nop")
+
 # -d:musl
 when defined(musl):
   var
@@ -134,32 +135,28 @@ when defined(musl):
     switch("passC", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
     switch("passL", pcreLibFile)
-  # -d:ssl
-  when defined(ssl):
-    const
-      useOpenSsl = (getEnv("USE_LIBRESSL") == "") or (getEnv("USE_LIBRESSL") == "0") # Uses libreSsl if false
-    var
-      sslLibFile: string
-      cryptoLibFile: string
-      sslIncludeDir: string
-      sslLibDir: string
-    if useOpenSsl:
-      sslLibFile = openSslLibFile
-      cryptoLibFile = openCryptoLibFile
-      sslIncludeDir = openSslIncludeDir
-      sslLibDir = openSslLibDir
-    else:
-      sslLibFile = libreSslLibFile
-      cryptoLibFile = libreCryptoLibFile
-      sslIncludeDir = libreSslIncludeDir
-      sslLibDir = libreSslLibDir
+  # -d:libressl or -d:openssl
+  when defined(libressl) or defined(openssl):
+    switch("define", "ssl")     # Pass -d:ssl to nim
+    when defined(libressl):
+      let
+        sslLibFile = libreSslLibFile
+        cryptoLibFile = libreCryptoLibFile
+        sslIncludeDir = libreSslIncludeDir
+        sslLibDir = libreSslLibDir
+    when defined(openssl):
+      let
+        sslLibFile = openSslLibFile
+        cryptoLibFile = openCryptoLibFile
+        sslIncludeDir = openSslIncludeDir
+        sslLibDir = openSslLibDir
 
     if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
       # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
-      if useOpenSsl:
-        selfExec "installOpenSsl"
-      else:
+      when defined(libressl):
         selfExec "installLibreSsl"
+      when defined(openssl):
+        selfExec "installOpenSsl"
     switch("passC", "-I" & sslIncludeDir) # So that ssl.h is found when running the musl task
     switch("passL", "-L" & sslLibDir)
     switch("passL", "-lssl")
@@ -187,6 +184,9 @@ task musl, "Builds an optimized static binary using musl":
   let
     numParams = paramCount()
 
+  when defined(libressl) and defined(openssl):
+    error("Define only 'libressl' or 'openssl', not both.")
+
   # param 0 will always be "nim"
   # param 1 will always be "musl"
   for i in 2 .. numParams:
@@ -201,7 +201,8 @@ task musl, "Builds an optimized static binary using musl":
       "\n  Usage Examples: nim musl FILE.nim" &
       "\n                  nim musl FILE1.nim FILE2.nim" &
       "\n                  nim musl -d:pcre FILE.nim" &
-      "\n                  nim musl -d:pcre -d:ssl FILE.nim")
+      "\n                  nim musl -d:libressl FILE.nim" &
+      "\n                  nim musl -d:pcre -d:openssl FILE.nim")
 
   for f in nimFiles:
     let

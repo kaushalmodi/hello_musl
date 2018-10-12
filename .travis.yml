@@ -24,6 +24,8 @@ env:
     - PROG3="hello_musl_ssl"
     - NIMFILE3="src/${PROG3}.nim"
     - BINFILE3="src/${PROG3}"
+    - BINFILE3libre="src/${PROG3}_libre"
+    - BINFILE3open="src/${PROG3}_open"
     #
     - DIST_DIR="${TRAVIS_BUILD_DIR}/dist"
     - ASSETFILE="${REPONAME}-${TRAVIS_TAG}.Linux_64bit_musl.tar.xz"
@@ -32,9 +34,8 @@ env:
     - NIMDIR="${TRAVIS_BUILD_DIR}/nim/${NIMVER}"
     - UPXVER="3.95"             # Change this value when upgrading upx
     - PCREVER="8.42"            # Change this value when upgrading pcre
-    - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
     - LIBRESSLVER="2.8.1"       # Change this value when upgrading libressl
-    - USE_LIBRESSL=1
+    - OPENSSLVER="1.1.1"        # Change this value when upgrading openssl
 
 addons:
   apt:
@@ -89,28 +90,34 @@ script:
   # PROG1
   - nim musl "${NIMFILE1}"
   # See that the binary is not dynamic.
-  - file "${BINFILE1}" || true
+  - file "${BINFILE1}"
   # Run the binary.
   - "${BINFILE1}"
   # PROG2
   - nim musl -d:pcre "${NIMFILE2}"
   # See that the binary is not dynamic.
-  - file "${BINFILE2}" || true
+  - file "${BINFILE2}"
   # Run the binary.
   - "${BINFILE2}"
   # PROG3
-  - nim musl -d:ssl "${NIMFILE3}"
+  - nim musl -d:libressl "${NIMFILE3}" && mv "${BINFILE3}" "${BINFILE3libre}"
   # See that the binary is not dynamic.
-  - file "${BINFILE3}" || true
+  - file "${BINFILE3libre}"
   # Run the binary.
-  - "${BINFILE3}"
+  - "${BINFILE3libre}"
+  - nim musl -d:openssl "${NIMFILE3}" && mv "${BINFILE3}" "${BINFILE3open}"
+  # See that the binary is not dynamic.
+  - file "${BINFILE3open}"
+  # Run the binary.
+  - "${BINFILE3open}"
 
 before_deploy:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir dist
   - cp "${BINFILE1}" "${DIST_DIR}"
   - cp "${BINFILE2}" "${DIST_DIR}"
-  - cp "${BINFILE3}" "${DIST_DIR}"
+  - cp "${BINFILE3libre}" "${DIST_DIR}"
+  - cp "${BINFILE3open}" "${DIST_DIR}"
   # -C <DIR> tells tar to change the current directory to <DIR>, and
   # then the "." means "add the entire current directory" (including
   # hidden files and sub-directories).
