@@ -88,7 +88,7 @@ task installOpenSsl, "Installs OPENSSL using musl-gcc":
       exec(openSslConfigureCmd.mapconcat())
       exec("make -j8 depend")
       exec("make -j8")
-      exec("make install")
+      exec("make install_sw")
   else:
     echo openSslLibFile & " already exists"
   setCommand("nop")
