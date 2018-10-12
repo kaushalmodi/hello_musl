@@ -19,6 +19,15 @@ These optional command-line utilities for binary size optimization
 will be run automatically one by one, if present.
 - ~strip~ (from ~binutils~): [[https://sourceware.org/binutils/docs/binutils/strip.html]]
 - ~upx~: [[https://github.com/upx/upx]]
+* Note about compiling with statically linked OpenSSL
+When building with ~-d:ssl~, a statically linked version of OpenSSL
+library is *first* built with the ~-DOPENSSL_NO_SECURE_MEMORY~
+Configure option, because of an [[https://github.com/openssl/openssl/issues/7207#issuecomment-420814524][issue with it getting built using
+MUSL]].
+
+Do *not* use the ~-d:ssl~ switch *when compiling using the
+~config.nims~ in this repo* if you don't want to enable that insecure
+option.
 * Generating static binary
 ** For this example ~hello_musl~ project
 1. ~git clone https://github.com/kaushalmodi/hello_musl~
@@ -60,14 +69,6 @@ will be run automatically one by one, if present.
      }
      "Kaushal Modi"
      #+end_example
-
-
-- Note :: When building with ~-d:ssl~, a statically linked version of
-          OpenSSL library is *first* built with
-          ~-DOPENSSL_NO_SECURE_MEMORY~ Configure option, because of an
-          [[https://github.com/openssl/openssl/issues/7207#issuecomment-420814524][issue with it getting built using MUSL]]. Do not use that
-          ~-d:ssl~ switch if you do not want to enable that insecure
-          option.
 ** For your Nim project
 - Copy the [[https://github.com/kaushalmodi/hello_musl/blob/master/config.nims][~config.nims~]] to your Nim project.
 - While being the same directory as ~config.nims~, do:
