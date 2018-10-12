@@ -63,8 +63,7 @@ task installPcre, "Installs PCRE using musl-gcc":
     else:
       echo "PCRE lib source dir " & pcreSourceDir & " already exists"
     withDir pcreSourceDir:
-      #  -idirafter /usr/include/ # Needed for linux/sysctl.h
-      putEnv("CC", "musl-gcc -static -idirafter /usr/include/")
+      putEnv("CC", "musl-gcc -static")
       exec(pcreConfigureCmd.mapconcat())
       exec("make -j8")
       exec("make install")
@@ -103,7 +102,8 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
     else:
       echo "LibreSSL lib source dir " & libreSslSourceDir & " already exists"
     withDir libreSslSourceDir:
-      putEnv("CC", "musl-gcc -static")
+      #  -idirafter /usr/include/ # Needed for linux/sysctl.h
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include/")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
       exec(libreSslConfigureCmd.mapconcat())
       exec("make -j8")
