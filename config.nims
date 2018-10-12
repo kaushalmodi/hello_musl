@@ -102,7 +102,8 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
     else:
       echo "LibreSSL lib source dir " & libreSslSourceDir & " already exists"
     withDir libreSslSourceDir:
-      putEnv("CC", "musl-gcc -static")
+      #  -idirafter /usr/include/ # Needed for linux/sysctl.h
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include/")
       putEnv("C_INCLUDE_PATH", libreSslIncludeDir)
       exec(libreSslConfigureCmd.mapconcat())
       exec("make -j8")
