@@ -63,7 +63,8 @@ task installPcre, "Installs PCRE using musl-gcc":
     else:
       echo "PCRE lib source dir " & pcreSourceDir & " already exists"
     withDir pcreSourceDir:
-      putEnv("CC", "musl-gcc -static")
+      #  -idirafter /usr/include/ # Needed for linux/sysctl.h
+      putEnv("CC", "musl-gcc -static -idirafter /usr/include/")
       exec(pcreConfigureCmd.mapconcat())
       exec("make -j8")
       exec("make install")
