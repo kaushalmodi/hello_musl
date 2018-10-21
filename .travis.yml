@@ -46,34 +46,40 @@ addons:
 install:
   # - find /usr/include -name "*.h" -print
   - echo "NIMDIR = ${NIMDIR}"
-  # After building nim, wipe csources to save on cache space.
-  - "{ [ -f ${NIMDIR}/bin/nim ]; } ||
-      ( rm -rf nim;
-        mkdir -p nim;
-        git clone --single-branch --branch devel --depth=1 ${NIMREPO} ${NIMDIR};
-        cd ${NIMDIR};
-        [ -d csources ] || git clone --depth 1 https://github.com/nim-lang/csources.git;
-        cd csources;
-        sh build.sh;
-        cd ..;
-        ./bin/nim c koch;
-        ./koch boot -d:release;
-        rm -rf csources;
-      )"
-  # - "{ [ -f ${NIMDIR}/bin/nimble ]; } ||
-  #     ( cd ${NIMDIR};
-  #       ./koch nimble;
-  #     )"
+  - |
+    if [[ ! -f "${NIMDIR}/bin/nim" ]]
+    then
+      rm -rf nim
+      mkdir -p nim
+      git clone --single-branch --branch devel --depth=1 "${NIMREPO}" "${NIMDIR}"
+      cd "${NIMDIR}" || exit
+      [ -d csources ] || git clone --depth 1 https://github.com/nim-lang/csources.git
+      cd csources
+      sh build.sh
+      cd ..
+      ./bin/nim c koch
+      ./koch boot -d:release
+      # After building nim, wipe csources to save on cache space.
+      rm -rf csources
+    fi
+  # - |
+  #   if [[ ! -f "${NIMDIR}/bin/nimble" ]]
+  #   then
+  #     cd "${NIMDIR}" || exit
+  #     ./koch nimble
+  #   fi
   - export PATH="${NIMDIR}/bin:${PATH}"
   - nim -v
 
-  - echo "Installing upx .."
-  - "{ [ -f upx/${UPXVER}/upx ]; } ||
-      { curl -OL https://github.com/upx/upx/releases/download/v${UPXVER}/upx-${UPXVER}-amd64_linux.tar.xz;
-        tar xvf upx-${UPXVER}-amd64_linux.tar.xz;
-        mkdir -p upx;
-        mv upx-${UPXVER}-amd64_linux upx/${UPXVER};
-      }"
+  - |
+    if [[ ! -f "upx/${UPXVER}/upx" ]]
+    then
+      echo "Installing upx .."
+      curl -OL "https://github.com/upx/upx/releases/download/v${UPXVER}/upx-${UPXVER}-amd64_linux.tar.xz"
+      tar xvf "upx-${UPXVER}-amd64_linux.tar.xz"
+      mkdir -p upx
+      mv "upx-${UPXVER}-amd64_linux" "upx/${UPXVER}"
+    fi
   - export PATH="${TRAVIS_BUILD_DIR}/upx/${UPXVER}/:${PATH}"
   - upx --version | grep -E '^upx'
 
@@ -122,6 +128,7 @@ before_deploy:
   # then the "." means "add the entire current directory" (including
   # hidden files and sub-directories).
   - tar caf "${ASSETFILE}" -C "${DIST_DIR}" .
+
 deploy:
   provider: releases
   api_key: "${GITHUB_OAUTH_TOKEN}"
