@@ -1,5 +1,9 @@
 from macros import error
-from ospaths import splitFile, `/`
+
+when NimMajor < 1 and NimMinor <= 19 and NimPatch < 9:
+  from ospaths import `/`, splitFile
+else:
+  from os import `/`, splitFile
 
 const
   doOptimize = true
