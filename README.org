@@ -12,7 +12,7 @@ prerequisites are met).
 * Prerequisites
 - OS: One of Linux x86 (32/64), ARM (32/64), MIPS (32/64), PowerPC
   (32/64), S390X, SuperH, Microblaze, OpenRISC ([[https://www.musl-libc.org/intro.html][ref]])
-- Nim: [[https://nim-lang.org/]] (built from [[https://github.com/nim-lang/Nim/tree/devel][*devel*]] branch as of <2018-12-12 Wed>)
+- Nim: [[https://nim-lang.org/]] (built from [[https://github.com/nim-lang/Nim/tree/devel][*devel*]] branch as of <2018-09-13 Thu>)
 - *musl* library: [[https://www.musl-libc.org/download.html]]
 - ~curl~ and GNU ~tar~ are needed on the system for the ~-d:pcre~ /
   ~-d:libressl~ / ~-d:openssl~ switches to work.
