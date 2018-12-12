@@ -128,7 +128,7 @@ when defined(musl):
     muslGccPath: string
   echo "  [-d:musl] Building a static binary using musl .."
   muslGccPath = findExe("musl-gcc")
-  echo "debug: " & muslGccPath
+  # echo "debug: " & muslGccPath
   if muslGccPath == "":
     error("'musl-gcc' binary was not found in PATH.")
   switch("passL", "-static")
