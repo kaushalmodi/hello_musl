@@ -46,20 +46,13 @@ install:
   # - find /usr/include -name "*.h" -print
   - echo "NIMDIR = ${NIMDIR}"
   - |
-    set -u # error on undefined variables
-    set -e # exit on first error
     if [[ ! -f "${NIMDIR}/bin/nim" ]]
     then
       rm -rf nim
       mkdir -p nim
       git clone --single-branch --branch devel --depth=1 "${NIMREPO}" "${NIMDIR}"
       cd "${NIMDIR}" || exit
-      [ -d csources ] || git clone --depth 1 https://github.com/nim-lang/csources.git
-      cd csources
-      sh build.sh
-      cd ..
-      ./bin/nim c --skipUserCfg koch
-      ./koch boot -d:release
+      sh build_all.sh
       # After building nim, wipe csources to save on cache space.
       rm -rf csources
     fi
