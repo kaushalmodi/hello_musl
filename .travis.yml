@@ -15,8 +15,6 @@ install:
   # - find /usr/include -name "*.h" -print
   - echo "NIMDIR = ${NIMDIR}"
   - |
-    set -u # error on undefined variables
-    set -e # exit on first error
     if [[ ! -f "${NIMDIR}/bin/nim" ]]
     then
       rm -rf nim
@@ -28,10 +26,15 @@ install:
       rm -rf csources
     fi
   - export PATH="${NIMDIR}/bin:${PATH}"
-  - nim -v
 
 script:
-  - echo "hello"
+  - nim -v
+  - |
+    if [[ ! -f "${NIMDIR}/koch" ]]
+    then
+      echo "koch did not get built"
+      exit 1
+    fi
 
 notifications:
   email:
