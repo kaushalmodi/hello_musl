@@ -49,12 +49,6 @@ install:
   - |
     if [[ ! -f "${NIMDIR}/bin/nim" ]]
     then
-      # If the git repo contains a config.nims, temporarily move it, else it fails the
-      # building of koch.
-      if [[ -f "${TRAVIS_BUILD_DIR}/config.nims" ]]
-      then
-        mv "${TRAVIS_BUILD_DIR}/config.nims" "${TRAVIS_BUILD_DIR}/config.nims.bkp"
-      fi
       rm -rf nim
       mkdir -p nim
       git clone --single-branch --branch devel --depth=1 "${NIMREPO}" "${NIMDIR}"
@@ -67,11 +61,6 @@ install:
       ./koch boot -d:release
       # After building nim, wipe csources to save on cache space.
       rm -rf csources
-      # Restore the backed up config.nims if present.
-      if [[ -f "${TRAVIS_BUILD_DIR}/config.nims.bkp" ]]
-      then
-        mv "${TRAVIS_BUILD_DIR}/config.nims.bkp" "${TRAVIS_BUILD_DIR}/config.nims"
-      fi
     fi
   # - |
   #   if [[ ! -f "${NIMDIR}/bin/nimble" ]]
