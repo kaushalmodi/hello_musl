@@ -57,7 +57,7 @@ install:
       cd csources
       sh build.sh
       cd ..
-      ./bin/nim c koch
+      ./bin/nim c --skipUserCfg --skipParentCfg koch
       ./koch boot -d:release
       # After building nim, wipe csources to save on cache space.
       rm -rf csources
