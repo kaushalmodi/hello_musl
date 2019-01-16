@@ -43,7 +43,7 @@ addons:
       - musl-tools
 
 install:
-  # - find /usr/include -name "*.h" -print
+  - set -euo pipefail # http://redsymbol.net/articles/unofficial-bash-strict-mode/
   - echo "NIMDIR = ${NIMDIR}"
   - |
     if [[ ! -f "${NIMDIR}/bin/nim" ]]
