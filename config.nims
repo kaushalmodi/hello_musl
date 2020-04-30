@@ -6,10 +6,7 @@ const
 when nimVersion <= (0, 19, 9):
   from ospaths import `/`, splitFile
 else:
-  when nimVersion < (1, 3, 0):
-    from os import `/`, splitFile
-  else:
-    from os import `/`, splitFile, paramCount, paramStr
+  from os import `/`, splitFile
 
 const
   doOptimize = true
