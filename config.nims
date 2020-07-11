@@ -64,9 +64,9 @@ proc mapconcat[T](s: openArray[T]; sep = " "; op: proc(x: T): string = dollar): 
       result.add(sep)
 
 task installPcre, "Installs PCRE using musl-gcc":
-  if not existsFile(pcreLibFile):
-    if not existsDir(pcreSourceDir):
-      if not existsFile(pcreArchiveFile):
+  if not fileExists(pcreLibFile):
+    if not dirExists(pcreSourceDir):
+      if not fileExists(pcreArchiveFile):
         exec("curl -LO " & pcreDownloadLink)
       exec("tar xf " & pcreArchiveFile)
     else:
@@ -81,9 +81,9 @@ task installPcre, "Installs PCRE using musl-gcc":
   setCommand("nop")
 
 task installLibreSsl, "Installs LIBRESSL using musl-gcc":
-  if (not existsFile(libreSslLibFile)) or (not existsFile(libreCryptoLibFile)):
-    if not existsDir(libreSslSourceDir):
-      if not existsFile(libreSslArchiveFile):
+  if (not fileExists(libreSslLibFile)) or (not fileExists(libreCryptoLibFile)):
+    if not dirExists(libreSslSourceDir):
+      if not fileExists(libreSslArchiveFile):
         exec("curl -LO " & libreSslDownloadLink)
       exec("tar xf " & libreSslArchiveFile)
     else:
@@ -103,9 +103,9 @@ task installLibreSsl, "Installs LIBRESSL using musl-gcc":
   setCommand("nop")
 
 task installOpenSsl, "Installs OPENSSL using musl-gcc":
-  if (not existsFile(openSslLibFile)) or (not existsFile(openCryptoLibFile)):
-    if not existsDir(openSslSourceDir):
-      if not existsFile(openSslArchiveFile):
+  if (not fileExists(openSslLibFile)) or (not fileExists(openCryptoLibFile)):
+    if not dirExists(openSslSourceDir):
+      if not fileExists(openSslArchiveFile):
         exec("curl -LO " & openSslDownloadLink)
       exec("tar xf " & openSslArchiveFile)
     else:
@@ -139,7 +139,7 @@ when defined(musl):
   switch("gcc.linkerexe", muslGccPath)
   # -d:pcre
   when defined(pcre):
-    if not existsFile(pcreLibFile):
+    if not fileExists(pcreLibFile):
       selfExec "installPcre"    # Install PCRE in current dir if pcreLibFile is not found
     switch("passC", "-I" & pcreIncludeDir) # So that pcre.h is found when running the musl task
     switch("define", "usePcreHeader")
@@ -160,7 +160,7 @@ when defined(musl):
         sslIncludeDir = openSslIncludeDir
         sslLibDir = openSslLibDir
 
-    if (not existsFile(sslLibFile)) or (not existsFile(cryptoLibFile)):
+    if (not fileExists(sslLibFile)) or (not fileExists(cryptoLibFile)):
       # Install SSL in current dir if sslLibFile or cryptoLibFile is not found
       when defined(libressl):
         selfExec "installLibreSsl"
