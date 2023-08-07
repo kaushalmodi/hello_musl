@@ -214,10 +214,15 @@ task musl, "Builds an optimized static binary using musl":
            "            nim musl -d:pcre -d:openssl FILE.nim"].mapconcat("\n"))
 
   for f in nimFiles:
+    let (dirName, baseName, _) = splitFile(f)
+    var binFile = dirName / baseName  # Save the binary in the same dir as the nim file
+    for switch in switches:
+      if len(switch) > 3 and switch[0..<3] == "-o:":
+        binFile = switch[3..^1]
+        break
+
     let
       extraSwitches = switches.mapconcat()
-      (dirName, baseName, _) = splitFile(f)
-      binFile = dirName / baseName  # Save the binary in the same dir as the nim file
       nimArgsArray = when doOptimize:
                        ["c", "-d:musl", "-d:release", "--opt:size", extraSwitches, f]
                      else:
